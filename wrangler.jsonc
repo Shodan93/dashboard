@@ -2,10 +2,25 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   // Name muss dem Worker aus dem Cloudflare-Git-Import entsprechen (Repo-Name).
   "name": "dashboard",
+  "main": "worker.js",
   "compatibility_date": "2026-07-01",
   "observability": { "enabled": true },
-  // Reine Static-Assets-Site (wie Orbit, nur ohne eigenen Worker-Code).
-  "assets": { "directory": "./public", "not_found_handling": "single-page-application" },
+  // Static Assets + Worker: /api/* und /mcp* gehen IMMER an den Worker,
+  // alles andere wird als statische Seite ausgeliefert.
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*", "/mcp", "/mcp/*"]
+  },
+  "kv_namespaces": [
+    { "binding": "COCKPIT_KV", "id": "4a3f64853aec4ba9926417dc84c2ef31" }
+  ],
+  "vars": {
+    "SUPABASE_URL": "https://eqrzazmdamiplqiizrat.supabase.co",
+    "SUPABASE_ANON_KEY": "sb_publishable_z0RG83SZ7ChiPVid-2ojLQ_4sqOJ2Iw",
+    "SITE_URL": "https://dashboard.mumelter.org"
+  },
   // Custom Domain: legt DNS-Eintrag + Zertifikat in der Zone mumelter.org automatisch an.
   "routes": [{ "pattern": "dashboard.mumelter.org", "custom_domain": true }]
 }

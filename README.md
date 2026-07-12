@@ -30,6 +30,7 @@ mit Präfix `cockpit_` im selben Supabase-Projekt.
 |---|---|
 | Frontend | Eine `public/index.html` (CSS+JS inline, kein Build-Step) — gleiche Philosophie wie ORBIT |
 | Hosting  | Cloudflare Worker `dashboard` mit Static Assets, Custom Domain `dashboard.mumelter.org` |
+| Backend | `worker.js` im selben Worker: `/api/*` (OAuth, Daten, KV-Token-Storage) + `/mcp` (Claude-Sprachsteuerung pro Nutzer) |
 | Auth + Daten | Supabase-Projekt **Orbit** (`eqrzazmdamiplqiizrat`): gemeinsame Auth, `boards` lesend, eigene Tabelle `cockpit_prefs` |
 | Design   | Tokens/Komponenten aus dem Figma-Design-System, transkribiert nach CSS (Quelle: `design/_ds/`) |
 

@@ -14,9 +14,12 @@ gegen diesen Vertrag gebaut und **enthält keine persönlichen IDs** mehr
 - Tokens, Refresh-Logik, Provider-Ressourcen-IDs (welche Notion-DB, welcher
   Kalender) liegen ausschließlich beim Backend, gespeichert **pro Nutzer**
   (Supabase-`user_id` aus dem verifizierten Token).
-- Empfohlene Umsetzung: eigener Cloudflare Worker (analog `orbit-api`),
-  erreichbar unter `https://cockpit-api.mumelter.org`. Verifiziert das
-  Supabase-Access-Token wie `worker.js` in ORBIT.
+- Umsetzung: **`worker.js` in diesem Repo** — derselbe Cloudflare Worker
+  (`dashboard`), der auch die Seite ausliefert. `/api/*` und `/mcp*` gehen an
+  den Worker (`run_worker_first`), alles andere an die Static Assets.
+  Basis-URL für das Frontend ist deshalb same-origin: **`/api`**.
+  Token-Storage: KV-Namespace `COCKPIT_KV` (`cockpit-integrations`,
+  id `4a3f64853aec4ba9926417dc84c2ef31`), Schlüssel `int:<user_id>:<provider>`.
 
 ## Authentifizierung
 
@@ -25,6 +28,8 @@ Jeder Request trägt den Header `X-Supabase-Token: <access_token>`
 `/auth/v1/user` und leitet daraus die `user_id` ab. 401 bei ungültigem Token.
 
 ## Die vier Endpunkte
+
+Alle Pfade relativ zur Seite selbst (`https://dashboard.mumelter.org/api/…`).
 
 ### 1. `GET /integrations`
 Status aller Provider des angemeldeten Nutzers.
@@ -37,7 +42,9 @@ Status aller Provider des angemeldeten Nutzers.
 ] }
 ```
 `status`: `connected` | `disconnected` | `error` (Token abgelaufen/widerrufen —
-Frontend zeigt „Neu verbinden").
+Frontend zeigt „Neu verbinden"). Zusätzlich enthält die Antwort
+`"mcp": { "active": true|false }` — ob der Nutzer eine aktive
+Claude-Sprachsteuerungs-URL hat (siehe unten).
 
 ### 2. `POST /integrations/{provider}/connect`
 Startet den OAuth-Flow. Antwort:
@@ -92,14 +99,65 @@ weiß nur das Backend (pro Nutzer gespeichert). Ein Eintrag pro Tag:
 
 Der Fließtext liegt im Notion-Seiteninhalt und wird von der Kachel nicht geladen.
 
+## OAuth-Flow im Detail
+
+1. Frontend: `POST /api/integrations/{provider}/connect` → Backend erzeugt
+   `state` (KV, 10 min TTL, gebunden an `user_id`) und liefert die Auth-URL.
+2. Browser öffnet die URL, Nutzer stimmt zu.
+3. Provider ruft `GET /api/oauth/{provider}/callback?code&state` auf → Backend
+   validiert `state`, tauscht `code` gegen Tokens (Client-Secret nur hier),
+   speichert sie in KV und leitet auf `/?connected={provider}` zurück.
+4. Frontend zeigt Erfolg und lädt die Kachel-Daten neu.
+
+Scopes: Google `calendar.readonly` (nur lesen) · Notion: Zugriff nur auf die
+Seiten, die der Nutzer bei der Autorisierung freigibt (dort muss die Seite
+mit der „Journal"-Datenbank dabei sein — das Backend findet sie per Suche
+nach dem Datenbank-Titel „Journal" und merkt sich die ID pro Nutzer).
+
+## Claude-Sprachsteuerung (Multi-User-MCP)
+
+Jeder Nutzer kann sein Orbit-Board per Claude steuern (in der Claude-App auch
+per Sprache). Dafür stellt derselbe Worker unter **`/mcp`** einen
+Remote-MCP-Server bereit — Multi-User-Variante des ORBIT-MCP:
+
+- `POST /api/mcp/token` (angemeldet) → erzeugt/rotiert die persönliche URL
+  `https://dashboard.mumelter.org/mcp?key=<token>`; `DELETE /api/mcp/token`
+  deaktiviert sie. Token → `user_id` liegt in KV (`mcptok:<token>`).
+- Alle Board-Zugriffe filtern serverseitig hart `owner = <user_id des Tokens>`
+  — man sieht und ändert nur die eigenen Boards.
+- Tools: `list_boards`, `list_statuses`, `list_tickets`, `get_ticket`,
+  `create_ticket`, `update_ticket`, `move_ticket`, `delete_ticket`.
+- Einrichtung (macht jeder Nutzer selbst, UI unter Integrationen → „Claude —
+  Sprache"): Claude-App → Settings → Connectors → benutzerdefinierter
+  Connector → URL einfügen, OAuth-Felder leer lassen.
+
+ORBIT selbst bleibt unangetastet — sein Single-User-MCP unter
+`orbit.mumelter.org/mcp` funktioniert unabhängig weiter.
+
+## Einmalige Einrichtung (Betreiber)
+
+Der Worker `dashboard` braucht diese **Secrets** (Cloudflare → Workers &
+Pages → dashboard → Settings → Variables and Secrets, Typ „Secret"; sie
+überleben Deployments):
+
+| Secret | Woher |
+|---|---|
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google Cloud Console → APIs & Services → Credentials → „OAuth client ID" (Web application). **Authorized redirect URI:** `https://dashboard.mumelter.org/api/oauth/google-calendar/callback`. Google Calendar API aktivieren. Scope `calendar.readonly` beim Consent Screen. |
+| `NOTION_CLIENT_ID` / `NOTION_CLIENT_SECRET` | notion.so/my-integrations → neue Integration, Typ **Public**. **Redirect URI:** `https://dashboard.mumelter.org/api/oauth/notion/callback`. |
+| `SUPABASE_SERVICE_KEY` | Supabase → Project Settings → API → `service_role` (nur für `/mcp`-Board-Zugriff; liegt nie im Repo/Frontend). |
+
+Ohne die Secrets antwortet `POST …/connect` mit `501` und der
+Integrationen-Screen zeigt einen Hinweis; die Seite selbst läuft normal.
+
 ## Verifikation „keine persönlichen IDs"
 
-Muss in `public/index.html` (und allem, was deployed wird) **ohne Treffer** sein:
+Muss in allem, was deployed wird (`public/`, `worker.js`, `wrangler.jsonc`),
+**ohne Treffer** sein:
 
 ```bash
-grep -riE "svenja|d3883d4e|f20e5649|39bb7b65|@gmail|@googlemail|calendar-id|notion_(db|database)" public/
+grep -riE "svenja|d3883d4e|f20e5649|39bb7b65|@gmail|@googlemail|calendar-id|notion_(db|database)" public/ worker.js wrangler.jsonc
 ```
 
 Bewusst erlaubt (öffentliche Infrastruktur, keine Personen-Daten):
-Supabase-Projekt-Ref `eqrzazmdamiplqiizrat` + Publishable Key, `orbit.mumelter.org`,
-`cockpit-api.mumelter.org`.
+Supabase-Projekt-Ref `eqrzazmdamiplqiizrat` + Publishable Key,
+`orbit.mumelter.org`, `dashboard.mumelter.org`, KV-Namespace-ID.

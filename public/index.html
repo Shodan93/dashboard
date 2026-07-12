@@ -326,7 +326,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
 .int-list{display:flex;flex-direction:column;gap:10px}
 .int-row{display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;background:var(--surface-inset);box-shadow:var(--hairline)}
 .int-row .tt{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
-.int-row .nm{font-family:var(--font-body);font-weight:600;font-size:13px;color:var(--text-primary)}
+.int-row .nm{font-family:var(--font-body);font-weight:600;font-size:13px;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .int-row .mt{font-family:var(--font-body);font-size:11px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .btns.sm{height:32px;padding:0 14px;font-size:11px}
 .btnp.sm{height:32px;padding:0 14px;font-size:11px}
@@ -618,6 +618,20 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
   </div>
 </div>
 
+<!-- Claude-Sprachsteuerung: persönliche MCP-URL -->
+<div class="scrim" id="mcpScrim" hidden>
+  <div class="card modal">
+    <div class="modal-h"><span class="pos-title">Claude — Sprache</span><button class="iconbtn" style="width:34px;height:34px" data-act="closeMcp" aria-label="Schließen"><svg width="16" height="16"><use href="#i-x"/></svg></button></div>
+    <span class="pos-meta">Deine persönliche Connector-URL. Behandle sie wie ein Passwort — wer sie hat, kann dein Board steuern.</span>
+    <input class="qcinput" id="mcpUrl" readonly style="font-size:12px">
+    <div class="qcactions" style="justify-content:space-between">
+      <button class="btns" data-act="mcpCopy">URL kopieren</button>
+      <button class="btnp" data-act="closeMcp">Fertig</button>
+    </div>
+    <span class="int-note">So einrichten: Claude-App → Einstellungen → Connectors → „Benutzerdefinierten Connector hinzufügen" → Name „Orbit", diese URL einfügen, OAuth-Felder leer lassen. Danach kannst du per Sprache z. B. sagen: „Verschieb das Ticket Deploy auf Erledigt" oder „Leg ein Ticket ‚Einkaufen' im Board Privat an".</span>
+  </div>
+</div>
+
 <!-- Profilmenü -->
 <div class="pmenu" id="pmenu" hidden>
   <div class="who" id="pmenuWho"></div>
@@ -678,16 +692,16 @@ try { if (window.supabase) sb = window.supabase.createClient(SUPABASE_URL, SUPAB
 catch (e) { console.warn('Supabase-Init fehlgeschlagen:', e); }
 
 // === Provider-Schicht (Vertrag: INTEGRATIONS.md) ============================
-// OAuth-Handshake und Token-Storage sind BACKEND-Aufgaben (cockpit-api).
+// OAuth-Handshake und Token-Storage sind BACKEND-Aufgaben (worker.js, /api).
 // Das Frontend kennt nur Provider-Status, Autorisierungs-URLs und
 // normalisierte Daten — keine Tokens, keine persönlichen Ressourcen-IDs.
-const COCKPIT_API = 'https://cockpit-api.mumelter.org';
+const COCKPIT_API = '/api';
 const PROVIDERS = [
   { id: 'orbit', name: 'Orbit', icon: 'orbit', desc: 'Boards & Aufgaben', managed: true },
   { id: 'google-calendar', name: 'Google Calendar', icon: 'calendar', desc: 'Termine in der Kalender-Kachel' },
   { id: 'notion', name: 'Notion', icon: 'doc', desc: 'Journal — später auch AI Brain' },
 ];
-let integrations = { available: false, map: {} }; // map[provider] = {status, account, …}
+let integrations = { available: false, map: {}, mcpActive: false }; // map[provider] = {status, account, …}
 
 async function api(path, opts) {
   const { data } = await sb.auth.getSession();
@@ -703,11 +717,13 @@ async function loadIntegrations() {
     const res = await api('/integrations');
     integrations.available = true;
     integrations.map = {};
+    integrations.mcpActive = !!(res.mcp && res.mcp.active);
     for (const it of (res.integrations || [])) integrations.map[it.provider] = it;
   } catch (e) {
     // Backend (noch) nicht erreichbar — Kacheln zeigen Beispieldaten
     integrations.available = false;
     integrations.map = {};
+    integrations.mcpActive = false;
   }
 }
 function intStatus(pid) {
@@ -1119,10 +1135,20 @@ function renderIntegrations() {
     else if (st.status === 'disconnected') btn = '<button class="btnp sm" data-act="intConnect" data-arg="' + p.id + '">Verbinden</button>';
     else btn = '<button class="btnp sm" disabled>Verbinden</button>';
     return '<div class="int-row"><span class="mehr-ic">' + icon(p.icon, 16) + '</span><span class="tt"><span class="nm">' + esc(p.name) + '</span><span class="mt">' + esc(st.account || p.desc) + '</span></span>' + chip(s.label, s.tone) + btn + '</div>';
-  }).join('');
+  }).join('') +
+  // Claude-Sprachsteuerung: persönliche MCP-URL fürs Orbit-Board
+  (function () {
+    const on = integrations.available && integrations.mcpActive;
+    const s = integrations.available ? (on ? INT_ST.connected : INT_ST.disconnected) : INT_ST.unavailable;
+    let btn;
+    if (!integrations.available) btn = '<button class="btnp sm" disabled>Aktivieren</button>';
+    else if (on) btn = '<button class="btns sm" data-act="mcpRotate">Neue URL</button><button class="btns sm" data-act="mcpOff">Aus</button>';
+    else btn = '<button class="btnp sm" data-act="mcpRotate">Aktivieren</button>';
+    return '<div class="int-row"><span class="mehr-ic">' + icon('brain', 16) + '</span><span class="tt"><span class="nm">Claude — Sprache</span><span class="mt">Board per Claude-App steuern (Connector-URL)</span></span>' + chip(on ? 'Aktiv' : s.label, on ? 'success' : s.tone) + btn + '</div>';
+  })();
   $('intNote').textContent = integrations.available
     ? 'Verbindungen speichert das Backend sicher pro Konto — das Dashboard sieht nie deine Zugangsdaten.'
-    : 'Das Integrations-Backend (cockpit-api) ist noch nicht deployt. Verbinden wird hier möglich, sobald es läuft — bis dahin zeigen Kalender & Journal Beispieldaten.';
+    : 'Das Integrations-Backend ist noch nicht aktiv (Worker-Secrets fehlen — siehe INTEGRATIONS.md). Bis dahin zeigen Kalender & Journal Beispieldaten.';
 }
 
 function renderCal() {
@@ -1186,6 +1212,27 @@ function handleAct(act, arg, el, e) {
         .then(r => { if (r.url) { window.open(r.url, '_blank', 'noopener'); toast('Autorisierung im neuen Tab abschließen'); } })
         .catch(() => toast('⚠ Verbinden noch nicht möglich — Backend fehlt'));
       break;
+    case 'mcpRotate':
+      api('/mcp/token', { method: 'POST' })
+        .then(r => { $('mcpUrl').value = r.url; $('mcpScrim').hidden = false; return loadIntegrations(); })
+        .then(() => renderIntegrations())
+        .catch(() => toast('⚠ Konnte keine URL erzeugen (Backend fehlt?)'));
+      break;
+    case 'mcpOff':
+      api('/mcp/token', { method: 'DELETE' })
+        .then(() => loadIntegrations())
+        .then(() => { renderIntegrations(); toast('✓ Sprachzugang deaktiviert'); })
+        .catch(() => toast('⚠ Deaktivieren fehlgeschlagen'));
+      break;
+    case 'mcpCopy': {
+      const el = $('mcpUrl');
+      el.select();
+      (navigator.clipboard ? navigator.clipboard.writeText(el.value) : Promise.reject())
+        .then(() => toast('✓ URL kopiert'))
+        .catch(() => { try { document.execCommand('copy'); toast('✓ URL kopiert'); } catch (e) { toast('Bitte manuell kopieren'); } });
+      break;
+    }
+    case 'closeMcp': $('mcpScrim').hidden = true; break;
     case 'intDisconnect':
       api('/integrations/' + arg, { method: 'DELETE' })
         .then(() => loadIntegrations())
@@ -1274,7 +1321,7 @@ $('btnSaveBoards').onclick = async () => {
 };
 
 // Scrims schließen bei Klick auf den Hintergrund
-for (const id of ['drawerScrim', 'quickScrim', 'boardScrim', 'intScrim'])
+for (const id of ['drawerScrim', 'quickScrim', 'boardScrim', 'intScrim', 'mcpScrim'])
   $(id).addEventListener('click', e => { if (e.target === $(id)) $(id).hidden = true; });
 
 // Quick Create (Demo: lokale Aufgabe)
@@ -1369,9 +1416,15 @@ async function startApp(s) {
   $('loginOverlay').hidden = true;
   $('appRoot').hidden = false;
   renderHeader(); renderNav(); renderAgenda(); renderCal(); renderLists();
+  // Rückkehr aus dem OAuth-Flow (?connected= / ?connect_error= vom Backend-Redirect)
+  const q = new URLSearchParams(location.search);
+  const connectedProv = q.get('connected'), connectErr = q.get('connect_error');
+  if (connectedProv || connectErr) { try { history.replaceState(null, '', location.pathname); } catch (e) {} }
   await Promise.all([loadBoards(), loadPrefs(), loadIntegrations()]);
   await loadAgenda();
   renderAll();
+  if (connectedProv) { toast('✓ ' + connectedProv + ' verbunden'); renderIntegrations(); $('intScrim').hidden = false; }
+  else if (connectErr) toast('⚠ Verbinden abgebrochen (' + connectErr + ')');
   // Realtime: Board-Änderungen aus Orbit live übernehmen
   try {
     sb.channel('cockpit-boards')
