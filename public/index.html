@@ -205,6 +205,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
 .tgl.on .kn{left:15px}
 
 .bottomrow{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.bottomrow>.card,.kpirow>.kpi{min-width:0}
 
 /* Orbit-Karte */
 .orbit-full{display:flex;gap:14px;align-items:stretch}
@@ -258,7 +259,8 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
 .agitem .tm{width:44px;flex-shrink:0;font-family:var(--font-display);font-weight:500;font-size:12px;color:var(--text-accent)}
 .agitem .ti{flex:1;font-family:var(--font-body);font-size:12px;color:var(--text-primary)}
 .agitem .du{font-family:var(--font-body);font-size:11px;color:var(--text-muted)}
-.calwrap{display:flex;gap:18px;flex:1}
+.calwrap{display:flex;gap:18px;flex:1;min-width:0}
+.calwrap>*{min-width:0}
 .mm{width:158px;flex-shrink:0;display:flex;flex-direction:column;gap:6px}
 .mm-h{display:flex;justify-content:space-between;align-items:center}
 .mm-nav{border:none;background:none;color:var(--text-muted);cursor:pointer;font-size:14px;width:24px;height:24px;border-radius:6px}
@@ -320,6 +322,16 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
 .bp-row:hover{background:rgba(255,255,255,.05)}
 .bp-row .t{flex:1;font-family:var(--font-body);font-size:13px;color:var(--text-primary)}
 
+/* Integrationen-Screen */
+.int-list{display:flex;flex-direction:column;gap:10px}
+.int-row{display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;background:var(--surface-inset);box-shadow:var(--hairline)}
+.int-row .tt{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.int-row .nm{font-family:var(--font-body);font-weight:600;font-size:13px;color:var(--text-primary)}
+.int-row .mt{font-family:var(--font-body);font-size:11px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btns.sm{height:32px;padding:0 14px;font-size:11px}
+.btnp.sm{height:32px;padding:0 14px;font-size:11px}
+.int-note{font-family:var(--font-body);font-size:11px;line-height:1.5;color:var(--text-muted)}
+
 /* Profil-Menü */
 .pmenu{position:fixed;z-index:55;width:240px;padding:12px;border-radius:14px;background:rgba(18,13,36,.97);backdrop-filter:blur(20px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1),0 16px 40px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:4px}
 .pmenu .who{padding:6px 8px 10px;font-family:var(--font-body);font-size:12px;color:var(--text-secondary);border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis}
@@ -338,7 +350,9 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
 .loginfoot{display:flex;justify-content:space-between;align-items:center;margin-top:4px}
 
 /* ---------- Responsiv (aus dem Design 1:1) ---------- */
-@container (max-width:1440px){.osright{width:340px}.osshell{gap:20px}}
+/* Ab ≤1440px schrumpft .osright auf 340/296px — Agenda + Mini-Monat passen
+   dann nicht mehr nebeneinander: Kalender-Kachel stapelt (Handoff-Fix). */
+@container (max-width:1440px){.osright{width:340px}.osshell{gap:20px}.calwrap{flex-direction:column;gap:14px}.mm{width:100%}}
 @container (max-width:1280px){
 .osshell{gap:16px;padding:14px}
 .oscontent{gap:16px}.osmain{gap:16px}.oslayout{gap:16px}
@@ -496,8 +510,8 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
           <div class="card lift sec sec-journal t-home">
             <div class="cardhead"><span class="pos-card-title ttl">Journal</span><button class="act" data-act="flash" data-arg="Journal folgt in einem späteren Schritt">Alle →</button></div>
             <div class="wave" id="wave"></div>
-            <span class="pos-caption">Heute, 08:15 · 0:45</span>
-            <span class="jtext">Fokus heute auf Orbit und Figma Foundation. Guter Call mit ACME am Morgen — abends Training nicht vergessen.</span>
+            <span class="pos-caption" id="journalCap">Heute, 08:15 · 0:45</span>
+            <span class="jtext" id="journalText">Fokus heute auf Orbit und Figma Foundation. Guter Call mit ACME am Morgen — abends Training nicht vergessen.</span>
           </div>
           <div class="card lift sec sec-brain t-home t-aibrain" style="position:relative;overflow:hidden">
             <div class="cardhead"><span class="pos-card-title ttl">AI Brain</span><button class="act" data-act="flash" data-arg="AI Brain folgt in einem späteren Schritt">Öffnen →</button></div>
@@ -534,8 +548,9 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
           <div class="aibox"><input id="aiInput" placeholder="Frag deine AI …"><button class="aisend" id="aiSend" disabled aria-label="Senden"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4Z"/></svg></button></div>
         </div>
 
-        <div class="card card-soft lift sec sec-cal t-home t-kalender">
-          <div class="cardhead"><span class="pos-card-title ttl">Kalender – Heute</span><button class="act" data-act="flash" data-arg="Google-Calendar-Anbindung folgt in einem späteren Schritt">Google Calendar</button></div>
+        <!-- Ganze Kachel klickbar; innere Buttons behalten Vorrang (closest [data-act] trifft zuerst sie) -->
+        <div class="card card-soft lift sec sec-cal t-home t-kalender" data-act="mobTab" data-arg="kalender" style="cursor:pointer">
+          <div class="cardhead"><span class="pos-card-title ttl">Kalender – Heute</span><button class="act" data-act="openIntegrations">Google Calendar</button></div>
           <div class="calwrap">
             <div class="agenda" id="agendaList"></div>
             <div class="mm">
@@ -593,9 +608,20 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
   </div>
 </div>
 
+<!-- Integrationen -->
+<div class="scrim" id="intScrim" hidden>
+  <div class="card modal">
+    <div class="modal-h"><span class="pos-title">Integrationen</span><button class="iconbtn" style="width:34px;height:34px" data-act="closeIntegrations" aria-label="Schließen"><svg width="16" height="16"><use href="#i-x"/></svg></button></div>
+    <span class="pos-meta">Verbinde deine Dienste — jede Verbindung gilt nur für dein Konto.</span>
+    <div class="int-list" id="intList"></div>
+    <span class="int-note" id="intNote"></span>
+  </div>
+</div>
+
 <!-- Profilmenü -->
 <div class="pmenu" id="pmenu" hidden>
   <div class="who" id="pmenuWho"></div>
+  <button class="mehrrow" data-act="openIntegrations"><span class="mehr-ic"><svg width="16" height="16"><use href="#i-link"/></svg></span><span class="t">Integrationen</span></button>
   <button class="mehrrow" data-act="gotoOrbit"><span class="mehr-ic"><svg width="16" height="16"><use href="#i-orbit"/></svg></span><span class="t">Orbit öffnen</span></button>
   <button class="mehrrow" data-act="logout"><span class="mehr-ic"><svg width="16" height="16"><use href="#i-logout"/></svg></span><span class="t">Abmelden</span></button>
 </div>
@@ -650,6 +676,46 @@ const ORBIT_URL = 'https://orbit.mumelter.org';
 let sb = null;
 try { if (window.supabase) sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }
 catch (e) { console.warn('Supabase-Init fehlgeschlagen:', e); }
+
+// === Provider-Schicht (Vertrag: INTEGRATIONS.md) ============================
+// OAuth-Handshake und Token-Storage sind BACKEND-Aufgaben (cockpit-api).
+// Das Frontend kennt nur Provider-Status, Autorisierungs-URLs und
+// normalisierte Daten — keine Tokens, keine persönlichen Ressourcen-IDs.
+const COCKPIT_API = 'https://cockpit-api.mumelter.org';
+const PROVIDERS = [
+  { id: 'orbit', name: 'Orbit', icon: 'orbit', desc: 'Boards & Aufgaben', managed: true },
+  { id: 'google-calendar', name: 'Google Calendar', icon: 'calendar', desc: 'Termine in der Kalender-Kachel' },
+  { id: 'notion', name: 'Notion', icon: 'doc', desc: 'Journal — später auch AI Brain' },
+];
+let integrations = { available: false, map: {} }; // map[provider] = {status, account, …}
+
+async function api(path, opts) {
+  const { data } = await sb.auth.getSession();
+  const tok = data && data.session && data.session.access_token;
+  const r = await fetch(COCKPIT_API + path, Object.assign({
+    headers: { 'X-Supabase-Token': tok || '', 'Content-Type': 'application/json' },
+  }, opts));
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
+async function loadIntegrations() {
+  try {
+    const res = await api('/integrations');
+    integrations.available = true;
+    integrations.map = {};
+    for (const it of (res.integrations || [])) integrations.map[it.provider] = it;
+  } catch (e) {
+    // Backend (noch) nicht erreichbar — Kacheln zeigen Beispieldaten
+    integrations.available = false;
+    integrations.map = {};
+  }
+}
+function intStatus(pid) {
+  const p = PROVIDERS.find(x => x.id === pid);
+  if (p && p.managed) return { status: 'connected', account: (session && session.user && session.user.email) || '' };
+  if (!integrations.available) return { status: 'unavailable' };
+  return integrations.map[pid] || { status: 'disconnected' };
+}
 
 // Per Einladungs-/Reset-Link gekommen? (Hash lesen, bevor Supabase ihn verbraucht)
 const initialHash = location.hash || '';
@@ -718,7 +784,7 @@ const mehrItems = [
   { icon: 'invest', label: 'Investments', act: 'flash', arg: 'Investments folgen in einem späteren Schritt' },
   { icon: 'goals', label: 'Goals', act: 'flash', arg: 'Goals folgen in einem späteren Schritt' },
   { icon: 'user', label: 'Profil', act: 'profile' },
-  { icon: 'link', label: 'Integrationen', act: 'flash', arg: 'Integrationen folgen in einem späteren Schritt' },
+  { icon: 'link', label: 'Integrationen', act: 'openIntegrations' },
   { icon: 'orbit', label: 'Orbit öffnen', act: 'gotoOrbit' },
   { icon: 'logout', label: 'Abmelden', act: 'logout' },
 ];
@@ -989,15 +1055,74 @@ function renderBrief() {
   const b = activeBoard();
   $('briefList').innerHTML =
     '<div class="brief-item"><span class="bd"></span><span class="tx">Du hast heute <strong>' + open + ' offene Aufgaben</strong>' + (b ? ' im Orbit' : '') + '</span></div>' +
-    '<div class="brief-item"><span class="bd"></span><span class="tx">2 Meetings im Kalender</span></div>' +
+    '<div class="brief-item"><span class="bd"></span><span class="tx">' + (agendaData || agendaRows).length + ' Termine im Kalender</span></div>' +
     '<div class="brief-item"><span class="bd"></span><span class="tx">Gym-Habit ist noch offen</span></div>' +
     '<div class="brief-item"><span class="bd"></span><span class="tx">Guter Fokus-Tag für Deep Work</span></div>';
 }
 
+// Kalender: echte Termine nur bei verbundenem Google Calendar, sonst Dummy
+let agendaData = null; // null = nicht verbunden/Fehler -> Beispieldaten
+function fmtDur(min) {
+  if (!min) return '';
+  return min >= 60 ? String(Math.round(min / 6) / 10).replace('.', ',') + ' h' : min + ' m';
+}
+async function loadAgenda() {
+  agendaData = null;
+  if (intStatus('google-calendar').status !== 'connected') return;
+  try {
+    const r = await api('/data/google-calendar/events?date=' + todayStr());
+    agendaData = (r.events || []).map(ev => ({ time: ev.start, title: ev.title, dur: fmtDur(ev.durationMin) }));
+  } catch (e) { agendaData = null; }
+}
 function renderAgenda() {
-  $('agendaList').innerHTML = agendaRows.map(ev =>
-    '<button class="agitem" data-act="flash" data-arg="' + esc(ev.time + ' · ' + ev.title) + '"><span class="tm">' + ev.time + '</span><span class="ti">' + esc(ev.title) + '</span><span class="du">' + ev.dur + '</span></button>').join('') +
+  const rows = agendaData || agendaRows;
+  $('agendaList').innerHTML = (rows.length
+    ? rows.map(ev => '<button class="agitem" data-act="flash" data-arg="' + esc(ev.time + ' · ' + ev.title) + '"><span class="tm">' + ev.time + '</span><span class="ti">' + esc(ev.title) + '</span><span class="du">' + ev.dur + '</span></button>').join('')
+    : '<div class="empty">Keine Termine heute.</div>') +
     '<button class="act" style="letter-spacing:.2px;text-transform:none;font-weight:500;font-family:var(--font-body);font-size:12px" data-act="mobTab" data-arg="kalender">Alle Termine anzeigen →</button>';
+}
+
+// Journal: neuester Notion-Eintrag (Datenvertrag: INTEGRATIONS.md), sonst Dummy
+async function renderJournal() {
+  const cap = $('journalCap'), txt = $('journalText');
+  if (intStatus('notion').status === 'connected') {
+    try {
+      const r = await api('/data/notion/journal?limit=1');
+      const e0 = r.entries && r.entries[0];
+      if (e0) {
+        const [y, m, d] = String(e0.datum || '').split('-');
+        const dl = d ? parseInt(d, 10) + '. ' + MON[parseInt(m, 10) - 1] : '';
+        cap.textContent = [dl, e0.stimmung, e0.energie ? 'Energie ' + e0.energie + '/5' : ''].filter(Boolean).join(' · ');
+        txt.textContent = e0.zusammenfassung || e0.titel || '';
+        return;
+      }
+    } catch (e) { /* Fallback unten */ }
+  }
+  cap.textContent = 'Heute, 08:15 · 0:45';
+  txt.textContent = 'Fokus heute auf Orbit und Figma Foundation. Guter Call mit ACME am Morgen — abends Training nicht vergessen.';
+}
+
+// Integrationen-Screen
+const INT_ST = {
+  connected: { label: 'Verbunden', tone: 'success' },
+  disconnected: { label: 'Nicht verbunden', tone: 'neutral' },
+  error: { label: 'Fehler', tone: 'danger' },
+  unavailable: { label: 'Wartet auf Backend', tone: 'warning' },
+};
+function renderIntegrations() {
+  $('intList').innerHTML = PROVIDERS.map(p => {
+    const st = intStatus(p.id), s = INT_ST[st.status] || INT_ST.disconnected;
+    let btn;
+    if (p.managed) btn = '<span class="pos-meta" style="flex-shrink:0">über Login</span>';
+    else if (st.status === 'connected') btn = '<button class="btns sm" data-act="intDisconnect" data-arg="' + p.id + '">Trennen</button>';
+    else if (st.status === 'error') btn = '<button class="btnp sm" data-act="intConnect" data-arg="' + p.id + '">Neu verbinden</button>';
+    else if (st.status === 'disconnected') btn = '<button class="btnp sm" data-act="intConnect" data-arg="' + p.id + '">Verbinden</button>';
+    else btn = '<button class="btnp sm" disabled>Verbinden</button>';
+    return '<div class="int-row"><span class="mehr-ic">' + icon(p.icon, 16) + '</span><span class="tt"><span class="nm">' + esc(p.name) + '</span><span class="mt">' + esc(st.account || p.desc) + '</span></span>' + chip(s.label, s.tone) + btn + '</div>';
+  }).join('');
+  $('intNote').textContent = integrations.available
+    ? 'Verbindungen speichert das Backend sicher pro Konto — das Dashboard sieht nie deine Zugangsdaten.'
+    : 'Das Integrations-Backend (cockpit-api) ist noch nicht deployt. Verbinden wird hier möglich, sobald es läuft — bis dahin zeigen Kalender & Journal Beispieldaten.';
 }
 
 function renderCal() {
@@ -1026,7 +1151,7 @@ function renderBoardPick() {
 }
 
 function renderAll() {
-  renderHeader(); renderNav(); renderKpis(); renderOrbit(); renderLists(); renderBrief(); renderAgenda(); renderCal();
+  renderHeader(); renderNav(); renderKpis(); renderOrbit(); renderLists(); renderBrief(); renderAgenda(); renderCal(); renderJournal();
 }
 
 /* ---------- Aktionen ---------- */
@@ -1050,6 +1175,24 @@ function handleAct(act, arg, el, e) {
     case 'closeQuick': $('quickScrim').hidden = true; break;
     case 'openBoards': pickDraft = null; renderBoardPick(); $('boardScrim').hidden = false; break;
     case 'closeBoards': $('boardScrim').hidden = true; break;
+    case 'openIntegrations':
+      $('pmenu').hidden = true;
+      renderIntegrations(); $('intScrim').hidden = false;
+      loadIntegrations().then(() => { renderIntegrations(); });
+      break;
+    case 'closeIntegrations': $('intScrim').hidden = true; break;
+    case 'intConnect':
+      api('/integrations/' + arg + '/connect', { method: 'POST' })
+        .then(r => { if (r.url) { window.open(r.url, '_blank', 'noopener'); toast('Autorisierung im neuen Tab abschließen'); } })
+        .catch(() => toast('⚠ Verbinden noch nicht möglich — Backend fehlt'));
+      break;
+    case 'intDisconnect':
+      api('/integrations/' + arg, { method: 'DELETE' })
+        .then(() => loadIntegrations())
+        .then(() => { renderIntegrations(); return loadAgenda(); })
+        .then(() => { renderAgenda(); renderBrief(); renderJournal(); toast('✓ Verbindung getrennt'); })
+        .catch(() => toast('⚠ Trennen fehlgeschlagen'));
+      break;
     case 'pickBoard': prefs.activeBoard = arg; savePrefs(); renderOrbit(); renderBrief(); break;
     case 'orbitTab': orbitStatusTab = arg; renderOrbit(); break;
     case 'openTicket': window.open(ORBIT_URL + '/#ticket=' + encodeURIComponent(arg), '_blank', 'noopener'); break;
@@ -1131,7 +1274,7 @@ $('btnSaveBoards').onclick = async () => {
 };
 
 // Scrims schließen bei Klick auf den Hintergrund
-for (const id of ['drawerScrim', 'quickScrim', 'boardScrim'])
+for (const id of ['drawerScrim', 'quickScrim', 'boardScrim', 'intScrim'])
   $(id).addEventListener('click', e => { if (e.target === $(id)) $(id).hidden = true; });
 
 // Quick Create (Demo: lokale Aufgabe)
@@ -1226,7 +1369,8 @@ async function startApp(s) {
   $('loginOverlay').hidden = true;
   $('appRoot').hidden = false;
   renderHeader(); renderNav(); renderAgenda(); renderCal(); renderLists();
-  await Promise.all([loadBoards(), loadPrefs()]);
+  await Promise.all([loadBoards(), loadPrefs(), loadIntegrations()]);
+  await loadAgenda();
   renderAll();
   // Realtime: Board-Änderungen aus Orbit live übernehmen
   try {

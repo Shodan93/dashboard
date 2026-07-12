@@ -55,8 +55,18 @@ sollte `https://dashboard.mumelter.org` zu den **Redirect URLs** hinzugefügt
 werden, damit Passwort-Reset-Links aufs Cockpit zeigen können
 (Dashboard → Authentication → URL Configuration).
 
+## Integrationen (Multi-User)
+
+Das Frontend ist gegen den Vertrag in [`INTEGRATIONS.md`](INTEGRATIONS.md)
+gebaut: Integrationen-Screen mit Verbinden-States (Verbunden / Nicht
+verbunden / Fehler / Wartet auf Backend), Kalender- und Journal-Kachel
+laden echte Daten **nur** über die Provider-Schicht — es stehen keine
+persönlichen IDs (Notion-DBs, Kalender, E-Mails) im Code. **OAuth-Handshake
+und Token-Storage sind Backend-Aufgaben** (`cockpit-api`, noch zu bauen) —
+bis dahin zeigen die Kacheln Beispieldaten.
+
 ## Nächste Schritte (geplant)
 
-1. Quick Create legt echte Orbit-Tickets an (per RPC, ohne ORBIT-Frontend anzufassen)
-2. Kalender (Google Calendar), Health, Habits, Goals mit echten Daten
-3. AI-Briefing über einen kleinen Worker-Proxy (wie `orbit-api`)
+1. Backend `cockpit-api` (Cloudflare Worker, analog `orbit-api`) mit den vier Endpunkten aus `INTEGRATIONS.md`
+2. Quick Create legt echte Orbit-Tickets an (per RPC, ohne ORBIT-Frontend anzufassen)
+3. Health, Habits, Goals mit echten Daten; AI-Briefing über den Worker-Proxy
