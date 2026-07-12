@@ -29,7 +29,7 @@ mit Präfix `cockpit_` im selben Supabase-Projekt.
 | Schicht  | Technik |
 |---|---|
 | Frontend | Eine `public/index.html` (CSS+JS inline, kein Build-Step) — gleiche Philosophie wie ORBIT |
-| Hosting  | Cloudflare Worker `cockpit` mit Static Assets, Custom Domain `dashboard.mumelter.org` |
+| Hosting  | Cloudflare Worker `dashboard` mit Static Assets, Custom Domain `dashboard.mumelter.org` |
 | Auth + Daten | Supabase-Projekt **Orbit** (`eqrzazmdamiplqiizrat`): gemeinsame Auth, `boards` lesend, eigene Tabelle `cockpit_prefs` |
 | Design   | Tokens/Komponenten aus dem Figma-Design-System, transkribiert nach CSS (Quelle: `design/_ds/`) |
 
@@ -37,7 +37,7 @@ mit Präfix `cockpit_` im selben Supabase-Projekt.
 
 ```bash
 npm install          # holt wrangler
-npx wrangler deploy  # deployt Worker "cockpit" + legt dashboard.mumelter.org als Custom Domain an
+npx wrangler deploy  # deployt Worker "dashboard" + legt dashboard.mumelter.org als Custom Domain an
 ```
 
 Voraussetzung: `wrangler login` bzw. `CLOUDFLARE_API_TOKEN` mit Workers-Rechten

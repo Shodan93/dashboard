@@ -1,6 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "cockpit",
+  // Name muss dem Worker aus dem Cloudflare-Git-Import entsprechen (Repo-Name).
+  "name": "dashboard",
   "compatibility_date": "2026-07-01",
   "observability": { "enabled": true },
   // Reine Static-Assets-Site (wie Orbit, nur ohne eigenen Worker-Code).
