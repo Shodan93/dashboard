@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Personal OS — Cockpit</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='26' fill='%238b5cf6'/><circle cx='50' cy='50' r='24' fill='none' stroke='white' stroke-width='7'/><circle cx='72' cy='30' r='8' fill='white'/></svg>">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* ============================================================
+   COCKPIT (Personal OS Dashboard) — dashboard.mumelter.org
+   Design: Figma-Export "Personal OS" (siehe /design im Repo).
+   Tokens + Layout sind 1:1 aus dem Design-System übernommen.
+   ============================================================ */
+
+/* ---------- Design-Tokens (aus _ds/tokens) ---------- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Rajdhani:wght@500;600;700&display=swap');
+:root {
+  --font-display: 'Rajdhani', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --amber-400: rgb(251,191,36);
+  --gray-100: rgb(242,240,250);
+  --gray-300: rgb(200,197,219);
+  --gray-400: rgb(166,163,190);
+  --gray-500: rgb(134,130,164);
+  --green-400: rgb(74,222,128);
+  --rose-400: rgb(251,113,133);
+  --sky-400: rgb(56,189,248);
+  --space-600: rgb(38,28,78);
+  --space-700: rgb(27,20,56);
+  --space-800: rgb(19,14,40);
+  --space-900: rgb(11,8,26);
+  --space-950: rgb(6,4,16);
+  --violet-300: rgb(196,181,253);
+  --violet-400: rgb(167,139,250);
+  --violet-500: rgb(139,92,246);
+  --violet-600: rgb(124,58,237);
+  --violet-700: rgb(109,40,217);
+  --white: rgb(255,255,255);
+  --accent-danger: var(--rose-400);
+  --accent-deep: var(--violet-700);
+  --accent-glow: var(--violet-400);
+  --accent-info: var(--sky-400);
+  --accent-primary: var(--violet-500);
+  --accent-success: var(--green-400);
+  --accent-warning: var(--amber-400);
+  --background-base: var(--space-950);
+  --background-raised: var(--space-900);
+  --border-accent: rgba(139,92,246,0.35);
+  --border-focus: rgba(167,139,250,0.8);
+  --border-subtle: rgba(255,255,255,0.08);
+  --surface-card: rgba(21,16,39,0.68);
+  --surface-elevated: rgba(27,20,56,0.85);
+  --surface-inset: rgba(11,8,26,0.6);
+  --text-accent: var(--violet-300);
+  --text-muted: var(--gray-500);
+  --text-on-accent: var(--white);
+  --text-primary: var(--gray-100);
+  --text-secondary: var(--gray-400);
+  --shadow-card: inset 0 0 0 1px rgba(255,255,255,0.08), 0px 8px 24px -4px rgba(0,0,0,0.35);
+  --shadow-card-glow: inset 0 0 0 1px rgba(158,128,255,0.48), inset 0px 1px 0px 0px rgba(255,255,255,0.13), 0px 0px 14px 1px rgba(143,112,255,0.15), 0px 14px 34px 0px rgba(0,0,0,0.35);
+  --shadow-elevated: inset 0 0 0 1px rgba(143,117,255,0.3), inset 0px 1px 0px 0px rgba(255,255,255,0.1), 0px 0px 13px 0px rgba(143,112,255,0.1), 0px 12px 30px 0px rgba(0,0,0,0.32);
+  --shadow-soft: inset 0 0 0 1px rgba(255,255,255,0.18), inset 0px 1px 0px 0px rgba(255,255,255,0.07), 0px 0px 12px 0px rgba(143,112,255,0.06), 0px 10px 28px 0px rgba(0,0,0,0.3);
+  --glow-accent: 0px 0px 18px 0px rgba(167,139,250,0.5);
+  --glow-nav-active: 0px 0px 12px 0px rgba(140,107,255,0.4);
+  --hairline: inset 0 0 0 1px var(--border-subtle);
+  --hairline-accent: inset 0 0 0 1px var(--border-accent);
+  --gradient-accent: linear-gradient(90deg, rgb(125,92,255) 0%, rgb(158,128,255) 100%);
+  --gradient-brand: linear-gradient(135deg, rgb(125,92,255) 0%, rgb(173,143,255) 71.43%);
+  --gradient-avatar: linear-gradient(180deg, rgb(167,139,250) 0%, rgb(109,40,217) 100%);
+  --gradient-orb: radial-gradient(9px 9px at 50% 50%, rgb(196,181,253) 0%, rgb(109,40,217) 100%);
+  --gradient-deep-space: linear-gradient(180deg, rgb(13,9,32) 0%, rgb(8,6,20) 55%, rgb(5,3,12) 100%);
+}
+
+/* ---------- Typografie (aus tokens/typography.css) ---------- */
+.pos-display{font-family:var(--font-display);font-weight:600;font-size:28px;line-height:40px;letter-spacing:.5px;color:var(--text-primary)}
+.pos-title{font-family:var(--font-display);font-weight:500;font-size:20px;line-height:28px;letter-spacing:.5px;color:var(--text-primary)}
+.pos-card-title{font-family:var(--font-display);font-weight:500;font-size:16px;line-height:24px;letter-spacing:.6px;color:var(--text-primary)}
+.pos-metric{font-family:var(--font-display);font-weight:600;font-size:30px;line-height:100%;color:var(--gray-100)}
+.pos-brand{font-family:var(--font-display);font-weight:600;font-size:13px;line-height:100%;letter-spacing:2px;text-transform:uppercase;color:var(--gray-100)}
+.pos-meta{font-family:var(--font-body);font-weight:400;font-size:12px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary)}
+.pos-caption{font-family:var(--font-body);font-weight:400;font-size:11px;line-height:16px;letter-spacing:.2px;color:var(--text-muted)}
+
+/* ---------- Basis & Hintergrund (aus dem Design 1:1) ---------- */
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:#05030c}
+a,a:hover{color:var(--text-accent);text-decoration:none}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--border-focus);outline-offset:2px;border-radius:8px}
+.osviewport{container-type:inline-size;position:relative;width:100%;min-height:100vh;background:var(--gradient-deep-space);font-family:var(--font-body);color:var(--text-primary);overflow-x:hidden}
+.osbg{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.osbg>div{position:absolute}
+.bg-neb{inset:-4%;background:url('assets/cosmic-bg.png') center/cover no-repeat;opacity:.9;animation:drift 140s ease-in-out infinite alternate}
+.stars{inset:0;background-image:radial-gradient(1.5px 1.5px at 18% 28%,rgba(255,255,255,.75),transparent),radial-gradient(1.5px 1.5px at 72% 62%,rgba(255,255,255,.5),transparent),radial-gradient(1px 1px at 42% 82%,rgba(255,255,255,.6),transparent),radial-gradient(1px 1px at 86% 22%,rgba(200,181,253,.65),transparent),radial-gradient(1.5px 1.5px at 55% 14%,rgba(255,255,255,.5),transparent),radial-gradient(1px 1px at 30% 55%,rgba(196,181,253,.5),transparent);animation:tw 7s ease-in-out infinite}
+.bg-glow{right:-120px;top:-160px;width:660px;height:500px;border-radius:50%;background:radial-gradient(closest-side,rgba(139,92,246,.18),transparent)}
+.bg-planet{right:-90px;top:-150px;width:360px;height:360px;border-radius:50%;background:url('assets/planet.png') center/cover no-repeat;opacity:.6;box-shadow:0 0 70px rgba(140,92,247,.42);animation:spin 240s linear infinite}
+.bg-read{inset:0;background:radial-gradient(1000px 560px at 74% 61%,rgba(5,4,13,.34),transparent 60%);opacity:.9}
+@keyframes tw{0%,100%{opacity:.55}50%{opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes drift{to{transform:translate3d(-2%,-1.6%,0) scale(1.05)}}
+@keyframes spinr{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.bg-neb,.bg-planet,.stars,.spinner{animation:none}}
+
+.osapp{position:relative;z-index:1}
+.osshell{display:flex;gap:24px;padding:16px;min-height:100vh;align-items:flex-start}
+.railwrap{flex-shrink:0;align-self:stretch;position:sticky;top:16px;height:calc(100vh - 32px)}
+.rail{width:88px;height:100%;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:5px;padding:16px 8px 14px;border-radius:20px;background:rgba(21,16,39,.68);backdrop-filter:blur(24px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 8px 24px -4px rgba(0,0,0,.35)}
+.brandmark{width:36px;height:36px;border-radius:12px;flex-shrink:0;position:relative;background:var(--accent-primary);box-shadow:0 0 18px 0 rgba(167,139,250,.5)}
+.brandmark .ring{position:absolute;left:9px;top:9px;width:18px;height:18px;border-radius:50%;box-shadow:inset 0 0 0 1.6px rgba(255,255,255,.9)}
+.brandmark .moon{position:absolute;left:22px;top:8px;width:5px;height:5px;border-radius:50%;background:#fff}
+.railbtn{width:100%;height:40px;border:none;background:transparent;color:rgb(153,150,178);border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .14s ease,color .14s ease}
+.railbtn:hover{background:rgba(255,255,255,.06);color:rgb(217,214,235)}
+
+/* SidebarNavItem (Design-System-Komponente) */
+.navitem{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;width:100%;height:54px;border-radius:14px;border:none;cursor:pointer;background:transparent;color:rgb(153,150,178);transition:background-color .14s ease,box-shadow .14s ease,color .14s ease}
+.navitem:hover{background:rgba(255,255,255,.06);color:rgb(217,214,235)}
+.navitem.on{background:var(--accent-glow);box-shadow:var(--glow-nav-active);color:#fff}
+.navitem .lbl{font-family:var(--font-display);font-weight:500;font-size:11px;line-height:100%;letter-spacing:.3px;text-transform:uppercase}
+
+.oscontent{flex:1;min-width:0;display:flex;flex-direction:column;gap:20px}
+.topbar{display:flex;align-items:center;gap:16px;min-height:64px;flex-shrink:0}
+.brandline{display:flex;flex-direction:column;gap:3px;flex-shrink:0}
+.brandrow{display:flex;align-items:center;gap:8px}
+.brandchip{position:relative;width:22px;height:22px;border-radius:6px;background:var(--gradient-brand);box-shadow:inset 0 0 0 1px rgba(255,255,255,.18);flex-shrink:0}
+.brandchip .ring{position:absolute;left:4.5px;top:4.5px;width:13px;height:13px;border-radius:50%;box-shadow:inset 0 0 0 1.2px rgba(255,255,255,.85)}
+.brandchip .moon{position:absolute;left:13.2px;top:4.2px;width:3.6px;height:3.6px;border-radius:50%;background:#fff}
+.spacer{flex:1}
+.iconbtn{width:44px;height:44px;flex-shrink:0;border:none;border-radius:12px;background:var(--surface-card);box-shadow:var(--hairline);color:var(--text-secondary);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;position:relative;transition:background .14s ease,color .14s ease}
+.iconbtn:hover{background:var(--surface-elevated);color:var(--text-primary)}
+.dot-badge{position:absolute;top:9px;right:10px;width:7px;height:7px;border-radius:50%;background:var(--accent-danger);box-shadow:0 0 6px rgba(251,113,133,.8)}
+.avatar{display:flex;align-items:center;gap:10px;height:44px;padding:6px 14px 6px 6px;border-radius:999px;background:var(--surface-card);box-shadow:var(--hairline);flex-shrink:0;cursor:pointer;border:none}
+.avatar .pic{width:30px;height:30px;border-radius:50%;background:var(--gradient-avatar);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:600;font-size:13px;color:#fff}
+.avatar .nm{font-family:var(--font-display);font-weight:500;font-size:12px;letter-spacing:1.2px;color:var(--text-primary);text-transform:uppercase}
+.hamb{display:none}
+.topbar-mob{display:none}
+
+/* SearchField (DS) */
+.searchf{display:flex;align-items:center;gap:10px;width:320px;height:40px;padding:10px 10px 10px 14px;border-radius:12px;background:var(--surface-inset);box-shadow:inset 0 0 0 1px rgba(255,255,255,.2)}
+.searchf input{flex:1;min-width:0;border:none;outline:none;background:transparent;font-family:var(--font-body);font-size:14px;color:var(--text-primary)}
+.searchf .sc{font-family:var(--font-body);font-size:11px;letter-spacing:.2px;color:var(--text-muted);flex-shrink:0}
+
+/* Buttons (DS) */
+.btnp{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:42px;padding:0 18px;border-radius:11px;border:none;cursor:pointer;font-family:var(--font-display);font-weight:600;font-size:13px;line-height:100%;letter-spacing:.6px;text-transform:uppercase;white-space:nowrap;transition:background .14s ease,box-shadow .14s ease;background:var(--gradient-accent);color:#fff}
+.btnp:hover{background:linear-gradient(90deg,rgb(143,112,255) 0%,rgb(178,153,255) 100%);box-shadow:0 2px 14px 0 rgba(140,107,255,.45)}
+.btnp:disabled{background:rgba(77,71,102,.5);color:rgb(178,176,199);cursor:not-allowed;box-shadow:none}
+.btns{display:inline-flex;align-items:center;gap:8px;height:40px;padding:10px 20px;border-radius:12px;border:none;cursor:pointer;background:var(--surface-elevated);box-shadow:var(--hairline);font-family:var(--font-body);font-weight:500;font-size:12px;line-height:100%;white-space:nowrap;color:var(--text-primary);transition:background .14s ease}
+.btns:hover{background:var(--space-700)}
+.aisend{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:10px;border:none;cursor:pointer;transition:background .14s ease,box-shadow .14s ease;background:var(--gradient-accent);color:#fff;flex-shrink:0}
+.aisend:disabled{background:rgba(77,71,102,.5);color:rgb(178,176,199);cursor:not-allowed}
+
+.oslayout{display:flex;gap:24px;align-items:flex-start}
+.osmain{flex:1;min-width:0;display:flex;flex-direction:column;gap:20px}
+.osright{width:360px;flex-shrink:0;display:flex;flex-direction:column;gap:20px}
+.kpirow{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+
+/* KPICard (DS) */
+.kpi{display:flex;flex-direction:column;justify-content:space-between;gap:8px;min-height:172px;border-radius:16px;padding:16px 18px;background:var(--surface-elevated);backdrop-filter:blur(20px);box-shadow:var(--shadow-elevated)}
+.kpi .lb{font-family:var(--font-display);font-weight:500;font-size:12px;letter-spacing:.24px;text-transform:uppercase;color:rgb(184,178,204)}
+.kpi .vrow{display:flex;align-items:center;gap:8px}
+.kpi .v{flex:1;font-family:var(--font-display);font-weight:600;font-size:30px;line-height:100%;color:rgb(240,237,250)}
+.kpi .sub{font-family:var(--font-body);font-size:12px;color:rgb(199,196,219)}
+.kpi .go{align-self:flex-start;border:none;background:none;padding:0;cursor:pointer;font-family:var(--font-display);font-weight:500;font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:var(--text-accent)}
+.ringwrap{position:relative;width:46px;height:46px;flex-shrink:0}
+.ringwrap svg{transform:rotate(-90deg)}
+.ringwrap .pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:600;font-size:11px;color:var(--gray-100)}
+
+.card{border-radius:16px;box-sizing:border-box;padding:18px 20px 20px;display:flex;flex-direction:column;gap:14px;background:var(--surface-card);backdrop-filter:blur(20px);box-shadow:var(--shadow-card)}
+.card-glow{background:rgba(21,16,39,.86);box-shadow:var(--shadow-card-glow)}
+.card-soft{background:rgba(21,16,39,.85);box-shadow:var(--shadow-soft)}
+.lift{transition:transform .2s ease,box-shadow .2s ease}
+.mob-only{display:none}
+.lift:hover{transform:translateY(-2px)}
+.cardhead{display:flex;align-items:center;gap:10px;min-height:26px}
+.cardhead .ttl{flex:1;min-width:0}
+.act{border:none;background:none;padding:0;cursor:pointer;font-family:var(--font-display);font-weight:500;font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-accent);white-space:nowrap}
+.act:hover{color:rgb(214,203,255)}
+.dotmark{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+/* StatusChip (DS) */
+.chip{display:inline-flex;align-items:center;width:fit-content;padding:4px 10px;border-radius:999px;background:var(--surface-inset);font-family:var(--font-display);font-weight:500;font-size:12px;line-height:100%;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
+.chip-accent{box-shadow:inset 0 0 0 1px rgba(139,92,246,.35);color:var(--text-accent)}
+.chip-success{box-shadow:inset 0 0 0 1px rgba(74,222,128,.4);color:var(--accent-success)}
+.chip-warning{box-shadow:inset 0 0 0 1px rgba(251,191,36,.4);color:var(--accent-warning)}
+.chip-danger{box-shadow:inset 0 0 0 1px rgba(251,113,133,.4);color:var(--accent-danger)}
+.chip-info{box-shadow:inset 0 0 0 1px rgba(56,189,248,.4);color:var(--accent-info)}
+.chip-neutral{box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);color:var(--text-secondary)}
+
+/* ListRow (DS) */
+.lrow{display:flex;align-items:center;gap:10px;height:36px;padding:0 2px}
+.lrow .cb{width:16px;height:16px;flex-shrink:0;border-radius:5px;border:none;padding:0;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;background:transparent;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.18)}
+.lrow .cb.ck{background:var(--gradient-accent);box-shadow:none}
+.lrow .tx{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--font-body);font-size:12px;color:var(--text-primary)}
+.lrow.done .tx{color:var(--text-muted);text-decoration:line-through}
+.lrow .mt{flex-shrink:0;font-family:var(--font-body);font-weight:500;font-size:12px;color:var(--text-muted)}
+.lrow .mt.warn{color:var(--accent-danger)}
+
+/* ProgressIndicator (DS) */
+.prog{position:relative;width:100%;height:6px;border-radius:999px;background:var(--surface-inset);overflow:hidden}
+.prog>span{position:absolute;left:0;top:0;height:100%;border-radius:999px;background:var(--gradient-accent);transition:width .22s ease}
+
+/* Toggle (DS, size sm) */
+.tgl{position:relative;width:30px;height:17px;border-radius:999px;border:none;padding:0;cursor:pointer;background:var(--surface-inset);box-shadow:var(--hairline);transition:background-color .16s ease;flex-shrink:0}
+.tgl.on{background:var(--accent-glow);box-shadow:none}
+.tgl .kn{position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;background:#fff;transition:left .16s cubic-bezier(.4,0,.2,1)}
+.tgl.on .kn{left:15px}
+
+.bottomrow{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+
+/* Orbit-Karte */
+.orbit-full{display:flex;gap:14px;align-items:stretch}
+.orbit-compact{display:none;flex-direction:column;gap:12px}
+.mytasks{width:230px;flex-shrink:0;display:flex;flex-direction:column;gap:4px;padding:14px;border-radius:14px;background:rgba(23,18,43,.5);box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.mytasks-h{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.mytasks-h .t{flex:1;font-family:var(--font-display);font-weight:500;font-size:13px;color:rgb(235,232,247)}
+.pill{padding:1px 7px;border-radius:999px;background:rgba(139,92,246,.18);font-family:var(--font-display);font-weight:600;font-size:11px;color:rgb(184,158,255)}
+.ocol{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px;padding:10px;border-radius:12px;background:var(--surface-inset);align-self:stretch}
+.ocol-h{display:flex;align-items:center;gap:8px;min-height:16px}
+.ocol-h .t{flex:1;font-family:var(--font-display);font-weight:500;font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ocol-h .c{font-family:var(--font-display);font-weight:500;font-size:12px;color:var(--text-muted)}
+.ticket{display:flex;flex-direction:column;gap:8px;padding:10px;border-radius:10px;background:rgba(23,18,43,.7);box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);cursor:pointer;transition:box-shadow .18s ease,transform .18s ease}
+.ticket:hover{box-shadow:inset 0 0 0 1px rgba(158,128,255,.4);transform:translateY(-1px)}
+.ticket-t{font-family:var(--font-body);font-size:12px;color:var(--text-primary);line-height:1.35}
+.addcard{font-family:var(--font-display);font-weight:500;font-size:11px;color:var(--text-accent);cursor:pointer;background:none;border:none;text-align:left;padding:2px 0}
+.addcard:hover{color:rgb(214,203,255)}
+.morecard{font-family:var(--font-body);font-size:11px;color:var(--text-muted);padding:2px 0}
+.otabs{display:flex;gap:6px;flex-wrap:wrap}
+.otab{min-height:32px;padding:6px 12px;border-radius:999px;border:none;cursor:pointer;font-family:var(--font-display);font-weight:500;font-size:12px;letter-spacing:.4px;background:var(--surface-inset);box-shadow:var(--hairline);color:var(--text-secondary);transition:all .14s ease}
+.otab:hover{color:var(--text-primary)}
+.otab.on{background:var(--accent-glow);box-shadow:var(--glow-nav-active);color:#fff}
+.tklist{display:flex;flex-direction:column;gap:8px}
+.tk-meta{display:flex;align-items:center;gap:8px}
+.tk-col{font-family:var(--font-display);font-weight:500;font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--text-muted)}
+
+.row{display:flex;align-items:center;gap:10px}
+.stat{display:flex;flex-direction:column;gap:6px}
+.stat-h{display:flex;justify-content:space-between;align-items:baseline}
+.stat-l{font-family:var(--font-body);font-size:13px;color:var(--text-primary)}
+.stat-v{font-family:var(--font-display);font-weight:500;font-size:13px;color:var(--text-accent)}
+.ic{display:inline-flex;color:var(--text-accent)}
+.muted{color:var(--text-muted)}
+
+.brief-orb{width:18px;height:18px;border-radius:50%;background:var(--gradient-orb);box-shadow:0 0 12px rgba(167,139,250,.6);flex-shrink:0}
+.brief-list{display:flex;flex-direction:column;gap:11px;position:relative;z-index:1}
+.brief-item{display:flex;align-items:flex-start;gap:10px}
+.brief-item .bd{width:6px;height:6px;border-radius:50%;background:var(--accent-glow);margin-top:6px;flex-shrink:0;box-shadow:0 0 8px rgba(167,139,250,.7)}
+.brief-item .tx{font-family:var(--font-body);font-size:13px;line-height:1.4;color:var(--text-secondary)}
+.brief-item .tx strong{color:var(--text-primary);font-weight:600}
+.orbimg{position:absolute;right:-6px;top:44px;width:132px;height:132px;opacity:.8;pointer-events:none}
+.aibox{display:flex;align-items:center;gap:10px;min-height:56px;padding:6px 8px 6px 16px;border-radius:12px;background:rgba(15,13,33,.55);box-shadow:inset 0 0 0 1px rgba(255,255,255,.22);position:relative;z-index:1}
+.aibox input{flex:1;min-width:0;border:none;outline:none;background:transparent;font-family:var(--font-body);font-size:13px;color:var(--text-primary)}
+.aireply{position:relative;z-index:1;padding:10px 12px;border-radius:10px;background:rgba(139,92,246,.12);box-shadow:inset 0 0 0 1px rgba(158,128,255,.3);font-family:var(--font-body);font-size:12px;line-height:1.45;color:var(--text-primary)}
+.spinner{width:15px;height:15px;border-radius:50%;border:2px solid rgba(196,181,253,.3);border-top-color:var(--violet-300);animation:spinr .7s linear infinite}
+.loadrow{display:flex;align-items:center;gap:8px;font-family:var(--font-body);font-size:12px;color:var(--text-accent);position:relative;z-index:1}
+
+.agenda{display:flex;flex-direction:column;gap:12px;flex:1;min-width:0}
+.agitem{display:flex;align-items:baseline;gap:10px;cursor:pointer;padding:2px 4px;border-radius:8px;transition:background .14s ease;border:none;background:none;text-align:left}
+.agitem:hover{background:rgba(255,255,255,.04)}
+.agitem .tm{width:44px;flex-shrink:0;font-family:var(--font-display);font-weight:500;font-size:12px;color:var(--text-accent)}
+.agitem .ti{flex:1;font-family:var(--font-body);font-size:12px;color:var(--text-primary)}
+.agitem .du{font-family:var(--font-body);font-size:11px;color:var(--text-muted)}
+.calwrap{display:flex;gap:18px;flex:1}
+.mm{width:158px;flex-shrink:0;display:flex;flex-direction:column;gap:6px}
+.mm-h{display:flex;justify-content:space-between;align-items:center}
+.mm-nav{border:none;background:none;color:var(--text-muted);cursor:pointer;font-size:14px;width:24px;height:24px;border-radius:6px}
+.mm-nav:hover{color:var(--text-primary);background:rgba(255,255,255,.06)}
+.mm-t{font-family:var(--font-display);font-weight:500;font-size:12px;color:var(--text-primary)}
+.mm-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px 2px}
+.mm-wd{text-align:center;font-family:var(--font-body);font-size:10px;color:var(--text-muted)}
+.mm-day{position:relative;height:20px;display:flex;align-items:center;justify-content:center;border-radius:6px;font-family:var(--font-body);font-size:11px;color:rgb(199,196,219);cursor:pointer;background:transparent;border:none}
+.mm-day:hover{background:rgba(255,255,255,.06)}
+.mm-day.sel{background:var(--accent-primary);color:#fff}
+.mm-day .d{position:absolute;bottom:1px;width:3px;height:3px;border-radius:50%;background:var(--violet-500)}
+.sel-line{font-family:var(--font-body);font-size:11px;color:var(--text-accent)}
+
+.devgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.dev{display:flex;flex-direction:column;gap:4px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.045);box-shadow:inset 0 0 0 1px rgba(255,255,255,.07);min-height:66px;justify-content:center}
+.dev-h{display:flex;align-items:center;justify-content:space-between;min-height:20px}
+.dev-nm{font-family:var(--font-body);font-weight:600;font-size:12px;color:rgb(237,235,247)}
+.dev-mt{font-family:var(--font-body);font-size:12px;color:var(--text-secondary)}
+
+.wave{display:flex;align-items:center;gap:3px;height:40px}
+.wave span{flex:1;border-radius:2px}
+.jtext{font-family:var(--font-body);font-size:13px;line-height:1.45;color:rgb(199,196,219)}
+
+.brainrow{display:flex;align-items:center;gap:10px;position:relative;z-index:1}
+.brainrow .t{flex:1;font-family:var(--font-body);font-weight:500;font-size:12px;color:var(--text-primary)}
+.brainrow .m{font-family:var(--font-body);font-size:12px;color:var(--text-muted)}
+.brainimg{position:absolute;right:-28px;top:26px;width:160px;height:160px;opacity:.7;filter:drop-shadow(0 0 10px rgba(140,107,255,.28));pointer-events:none}
+.mehr-ic{width:36px;height:36px;border-radius:10px;background:var(--surface-elevated);box-shadow:var(--hairline);color:var(--text-accent);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.mehrrow{display:flex;align-items:center;gap:12px;min-height:48px;padding:6px 6px;border-radius:12px;cursor:pointer;background:none;border:none;text-align:left;transition:background .14s ease;width:100%}
+.mehrrow:hover{background:rgba(255,255,255,.05)}
+.mehrrow .t{flex:1;font-family:var(--font-body);font-size:14px;color:var(--text-primary)}
+
+.botnav{display:none;position:fixed;left:0;right:0;bottom:0;z-index:40;padding:8px 8px calc(8px + env(safe-area-inset-bottom)) 8px;background:rgba(13,10,28,.86);backdrop-filter:blur(22px);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 -8px 24px rgba(0,0,0,.4)}
+.botnav-in{display:flex;justify-content:space-around}
+.bnitem{flex:1;min-width:44px;min-height:52px;border:none;background:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:rgb(140,137,168);border-radius:12px;transition:color .14s ease}
+.bnitem .bl{font-family:var(--font-display);font-weight:500;font-size:10px;letter-spacing:.4px;text-transform:uppercase}
+.bnitem.on{color:var(--violet-300)}
+.bnitem.on .ic{filter:drop-shadow(0 0 8px rgba(167,139,250,.6))}
+
+.scrim{position:fixed;inset:0;z-index:50;background:rgba(4,3,12,.62);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:24px}
+.drawer-scrim{align-items:flex-start;justify-content:flex-start;padding:0}
+.drawer{width:260px;max-width:82vw;height:100%;padding:20px 14px;display:flex;flex-direction:column;gap:6px;background:rgba(18,13,36,.96);box-shadow:2px 0 40px rgba(0,0,0,.5);overflow-y:auto}
+.drawer-h{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:0 6px}
+.drow{display:flex;align-items:center;gap:12px;min-height:48px;padding:0 12px;border-radius:12px;border:none;background:none;cursor:pointer;color:var(--text-secondary);text-align:left}
+.drow .t{font-family:var(--font-display);font-weight:500;font-size:13px;letter-spacing:.6px;text-transform:uppercase}
+.drow:hover{background:rgba(255,255,255,.06);color:var(--text-primary)}
+.drow.on{background:var(--accent-glow);color:#fff;box-shadow:var(--glow-nav-active)}
+.modal{width:420px;max-width:100%;padding:22px;gap:16px}
+.modal-h{display:flex;align-items:center;justify-content:space-between}
+.qcinput{width:100%;height:46px;padding:0 14px;border-radius:12px;border:none;outline:none;background:var(--surface-inset);box-shadow:inset 0 0 0 1px rgba(255,255,255,.2);font-family:var(--font-body);font-size:14px;color:var(--text-primary)}
+.qcactions{display:flex;justify-content:flex-end;gap:10px}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:10px;padding:12px 18px;border-radius:12px;background:rgba(21,16,39,.92);backdrop-filter:blur(18px);box-shadow:inset 0 0 0 1px rgba(74,222,128,.4),0 12px 30px rgba(0,0,0,.4);font-family:var(--font-body);font-size:13px;color:var(--text-primary)}
+.toast .tk{width:8px;height:8px;border-radius:50%;background:var(--accent-success);box-shadow:0 0 8px rgba(74,222,128,.7)}
+.empty{padding:14px;border-radius:12px;background:var(--surface-inset);box-shadow:var(--hairline);font-family:var(--font-body);font-size:13px;color:var(--text-muted);text-align:center}
+
+/* Board-Auswahl (Cockpit-spezifisch) */
+.boardpick{display:flex;flex-direction:column;gap:4px;max-height:300px;overflow-y:auto}
+.bp-row{display:flex;align-items:center;gap:12px;min-height:44px;padding:0 10px;border-radius:12px;border:none;background:none;cursor:pointer;text-align:left;transition:background .14s ease;width:100%}
+.bp-row:hover{background:rgba(255,255,255,.05)}
+.bp-row .t{flex:1;font-family:var(--font-body);font-size:13px;color:var(--text-primary)}
+
+/* Profil-Menü */
+.pmenu{position:fixed;z-index:55;width:240px;padding:12px;border-radius:14px;background:rgba(18,13,36,.97);backdrop-filter:blur(20px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1),0 16px 40px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:4px}
+.pmenu .who{padding:6px 8px 10px;font-family:var(--font-body);font-size:12px;color:var(--text-secondary);border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis}
+
+/* ---------- Login (Cockpit) ---------- */
+.loginwrap{position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--gradient-deep-space)}
+.loginwrap .osbg{position:absolute}
+.logincard{position:relative;z-index:1;width:400px;max-width:100%;display:flex;flex-direction:column;gap:16px;padding:32px 28px;border-radius:20px;background:rgba(21,16,39,.86);backdrop-filter:blur(24px);box-shadow:var(--shadow-card-glow)}
+.logincard .brandrow{margin-bottom:2px}
+.login-h{font-family:var(--font-display);font-weight:600;font-size:24px;line-height:32px;letter-spacing:.5px;color:var(--text-primary)}
+.login-intro{font-family:var(--font-body);font-size:13px;line-height:1.5;color:var(--text-secondary)}
+.login-err{font-family:var(--font-body);font-size:12px;line-height:1.45;color:var(--accent-danger)}
+.login-err.ok{color:var(--accent-success)}
+.loginlink{border:none;background:none;padding:0;cursor:pointer;font-family:var(--font-body);font-size:12px;color:var(--text-accent);text-align:left}
+.loginlink:hover{color:rgb(214,203,255)}
+.loginfoot{display:flex;justify-content:space-between;align-items:center;margin-top:4px}
+
+/* ---------- Responsiv (aus dem Design 1:1) ---------- */
+@container (max-width:1440px){.osright{width:340px}.osshell{gap:20px}}
+@container (max-width:1280px){
+.osshell{gap:16px;padding:14px}
+.oscontent{gap:16px}.osmain{gap:16px}.oslayout{gap:16px}
+.osright{width:296px}
+.kpirow{gap:12px}
+.bottomrow{gap:14px}
+.rail{width:76px;padding:14px 6px}
+.mytasks{width:200px}
+.orbimg{width:112px}
+}
+@container (max-width:1024px){
+.railwrap{display:none}
+.desk-search{display:none}
+.hamb{display:inline-flex}
+.oslayout{flex-direction:column}
+.osright{width:auto}
+.kpirow{grid-template-columns:repeat(2,1fr);gap:14px}
+.bottomrow{grid-template-columns:1fr;gap:16px}
+.orbit-full{display:none}
+.orbit-compact{display:flex}
+}
+@container (max-width:600px){
+.osshell{padding:12px 12px 88px}
+.topbar-desk{display:none}
+.topbar-mob{display:flex;align-items:center;gap:12px;min-height:52px}
+.kpirow{display:none}
+.botnav{display:block}
+.oslayout,.osmain,.osright,.bottomrow{display:contents}
+.osapp .sec{display:none}
+.osapp[data-tab="home"] .t-home{display:flex}
+.osapp[data-tab="orbit"] .t-orbit{display:flex}
+.osapp[data-tab="kalender"] .t-kalender{display:flex}
+.osapp[data-tab="aibrain"] .t-aibrain{display:flex}
+.osapp[data-tab="mehr"] .t-mehr{display:flex}
+.sec-brief{order:1}.sec-tasks{order:2}.sec-habits{order:3}.sec-health{order:4}.sec-cal{order:5}.sec-goals{order:6}.sec-journal{order:7}.sec-smart{order:8}.sec-brain{order:9}
+.oscontent{gap:14px}
+.calwrap{flex-direction:column;gap:14px}
+.mm{width:100%}
+.agenda{width:100%}
+.bg-planet{width:190px;right:-70px;top:-90px;opacity:.42}
+.stars{opacity:.4}
+.bg-glow{opacity:.5}
+.bg-neb{opacity:.7}
+.orbimg{width:104px;top:52px}
+.brainimg{width:120px}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= LOGIN ================= -->
+<div class="loginwrap" id="loginOverlay">
+  <div class="osbg">
+    <div class="bg-neb"></div><div class="stars"></div><div class="bg-glow"></div><div class="bg-planet"></div><div class="bg-read"></div>
+  </div>
+  <div class="logincard">
+    <div class="brandrow"><span class="brandchip"><span class="ring"></span><span class="moon"></span></span><span class="pos-brand">Personal OS</span></div>
+    <span class="login-h" id="loginHead">Cockpit — Anmelden</span>
+    <span class="login-intro" id="loginIntro">Melde dich mit deinem Orbit-Konto an (gleiche E-Mail, gleiches Passwort). Zugang nur auf Einladung.</span>
+    <span class="login-err" id="loginErr" hidden></span>
+    <input class="qcinput" id="loginEmail" type="email" placeholder="E-Mail" autocomplete="username">
+    <input class="qcinput" id="loginPass" type="password" placeholder="Passwort" autocomplete="current-password">
+    <input class="qcinput" id="loginNewPass" type="password" placeholder="Neues Passwort (min. 6 Zeichen)" autocomplete="new-password" hidden>
+    <button class="btnp" id="btnLogin">Anmelden</button>
+    <button class="btnp" id="btnSendReset" hidden>Reset-Link senden</button>
+    <button class="btnp" id="btnSetPass" hidden>Passwort festlegen</button>
+    <div class="loginfoot">
+      <button class="loginlink" id="btnForgot">Passwort vergessen?</button>
+      <button class="loginlink" id="btnBackLogin" hidden>← Zurück zur Anmeldung</button>
+      <a class="loginlink" href="https://orbit.mumelter.org" target="_blank" rel="noopener">🪐 Zum Orbit Tool</a>
+    </div>
+  </div>
+</div>
+
+<!-- ================= APP ================= -->
+<div class="osviewport" id="appRoot" hidden>
+<div class="osbg">
+  <div class="bg-neb"></div><div class="stars"></div><div class="bg-glow"></div><div class="bg-planet"></div><div class="bg-read"></div>
+</div>
+<div class="osapp" id="osapp" data-tab="home">
+<div class="osshell">
+
+  <div class="railwrap">
+    <aside class="rail">
+      <div class="brandmark"><span class="ring"></span><span class="moon"></span></div>
+      <div style="height:6px"></div>
+      <div id="railNav" style="display:contents"></div>
+      <div style="flex:1"></div>
+      <button class="railbtn" data-act="flash" data-arg="Einstellungen folgen in einem späteren Schritt" aria-label="Einstellungen"><svg width="20" height="20"><use href="#i-settings"/></svg></button>
+      <button class="railbtn" data-act="logout" aria-label="Abmelden"><svg width="20" height="20"><use href="#i-logout"/></svg></button>
+    </aside>
+  </div>
+
+  <div class="oscontent">
+    <header class="topbar topbar-desk">
+      <button class="iconbtn hamb" data-act="openDrawer" aria-label="Menü"><svg width="20" height="20"><use href="#i-menu"/></svg></button>
+      <div class="brandline">
+        <div class="brandrow"><span class="brandchip"><span class="ring"></span><span class="moon"></span></span><span class="pos-brand">Personal OS</span></div>
+        <span class="pos-display" style="white-space:nowrap" id="greeting">Guten Morgen</span>
+        <span class="pos-meta" id="dateline"></span>
+      </div>
+      <div class="spacer"></div>
+      <div class="desk-search"><div class="searchf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><input id="searchInput" placeholder="Suche in deinem OS …"><span class="sc">⌘K</span></div></div>
+      <button class="btnp" data-act="openQuick">Quick Create</button>
+      <button class="iconbtn" data-act="ring" aria-label="Benachrichtigungen"><svg width="18" height="18"><use href="#i-bell"/></svg><span class="dot-badge"></span></button>
+      <button class="avatar" data-act="profile"><span class="pic" id="avatarPic"></span><span class="nm" id="avatarName"></span></button>
+    </header>
+
+    <header class="topbar-mob">
+      <span class="brandchip"><span class="ring"></span><span class="moon"></span></span>
+      <div class="brandline" style="flex:1">
+        <span class="pos-display" style="font-size:20px;line-height:24px" id="greetingMob">Guten Morgen</span>
+        <span class="pos-meta" id="datelineMob"></span>
+      </div>
+      <button class="iconbtn" data-act="openQuick" aria-label="Quick Create"><svg width="20" height="20"><use href="#i-plus"/></svg></button>
+      <button class="avatar" style="padding:6px" data-act="profile"><span class="pic" id="avatarPicMob"></span></button>
+    </header>
+
+    <div class="oslayout">
+      <div class="osmain">
+
+        <div class="kpirow" id="kpirow"></div>
+
+        <div class="card card-glow lift sec sec-orbit t-orbit">
+          <div class="cardhead">
+            <span class="pos-title ttl">Orbit – Project Board</span>
+            <span class="chip chip-accent" id="orbitBoardChip">Orbit</span>
+            <button class="iconbtn" style="width:34px;height:34px" data-act="openBoards" title="Boards auswählen" aria-label="Boards auswählen"><svg width="16" height="16"><use href="#i-settings"/></svg></button>
+            <a class="act" href="https://orbit.mumelter.org" target="_blank" rel="noopener">Zum Orbit Tool →</a>
+          </div>
+          <div id="orbitTabsWrap" class="otabs" hidden></div>
+          <div class="orbit-full" id="orbitFull"></div>
+          <div class="orbit-compact">
+            <div class="otabs" id="orbitStatusTabs"></div>
+            <div class="tklist" id="orbitCompact"></div>
+          </div>
+        </div>
+
+        <div class="card lift sec sec-tasks t-home mob-only">
+          <div class="cardhead"><span class="pos-card-title ttl">Daily Tasks</span><a class="act" href="https://orbit.mumelter.org" target="_blank" rel="noopener">Orbit →</a></div>
+          <div id="tasksMob" style="display:contents"></div>
+        </div>
+
+        <div class="card lift sec sec-habits t-home mob-only">
+          <div class="cardhead"><span class="pos-card-title ttl">Habits &amp; Streaks</span><span class="pos-meta" id="hbMeta"></span></div>
+          <div id="habitsList" style="display:contents"></div>
+        </div>
+
+        <div class="card lift sec sec-health t-home mob-only">
+          <div class="cardhead"><span class="pos-card-title ttl">Health</span><span class="pos-meta">Heute</span></div>
+          <div id="healthList" style="display:contents"></div>
+        </div>
+
+        <div class="bottomrow">
+          <div class="card lift sec sec-journal t-home">
+            <div class="cardhead"><span class="pos-card-title ttl">Journal</span><button class="act" data-act="flash" data-arg="Journal folgt in einem späteren Schritt">Alle →</button></div>
+            <div class="wave" id="wave"></div>
+            <span class="pos-caption">Heute, 08:15 · 0:45</span>
+            <span class="jtext">Fokus heute auf Orbit und Figma Foundation. Guter Call mit ACME am Morgen — abends Training nicht vergessen.</span>
+          </div>
+          <div class="card lift sec sec-brain t-home t-aibrain" style="position:relative;overflow:hidden">
+            <div class="cardhead"><span class="pos-card-title ttl">AI Brain</span><button class="act" data-act="flash" data-arg="AI Brain folgt in einem späteren Schritt">Öffnen →</button></div>
+            <img class="brainimg" src="assets/ai-brain-network.png" alt="">
+            <div style="display:flex;flex-direction:column;gap:12px;position:relative;z-index:1" id="brainList"></div>
+          </div>
+          <div class="card lift sec sec-smart t-home">
+            <div class="cardhead"><span class="pos-card-title ttl">Smart Home</span><button class="act" data-act="flash" data-arg="Smart Home folgt in einem späteren Schritt">Alle Geräte →</button></div>
+            <div class="devgrid" id="devgrid"></div>
+          </div>
+        </div>
+
+        <div class="card lift sec sec-invest t-mehr mob-only">
+          <div class="cardhead"><span class="pos-card-title ttl">Investments</span><span class="chip chip-success">+3,2%</span></div>
+          <div class="row" style="align-items:baseline;gap:8px"><span class="pos-metric">48.320 €</span><span class="pos-meta" style="color:var(--accent-success)">Heute +412 €</span></div>
+          <div id="allocList" style="display:contents"></div>
+        </div>
+
+        <div class="card sec sec-mehr t-mehr mob-only">
+          <div class="cardhead"><span class="pos-card-title ttl">Mehr</span></div>
+          <div id="mehrList" style="display:contents"></div>
+        </div>
+
+      </div>
+
+      <div class="osright">
+        <div class="card card-glow lift sec sec-brief t-home" style="position:relative;overflow:hidden">
+          <div class="cardhead"><span class="brief-orb"></span><span class="pos-card-title ttl">AI Morning Briefing</span><span class="chip chip-accent">BETA</span></div>
+          <img class="orbimg" src="assets/ai-orb.png" alt="">
+          <div class="brief-list" id="briefList"></div>
+          <div class="loadrow" id="aiLoad" hidden><span class="spinner"></span>AI denkt nach …</div>
+          <div class="aireply" id="aiReply" hidden></div>
+          <div style="flex:1"></div>
+          <div class="aibox"><input id="aiInput" placeholder="Frag deine AI …"><button class="aisend" id="aiSend" disabled aria-label="Senden"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4Z"/></svg></button></div>
+        </div>
+
+        <div class="card card-soft lift sec sec-cal t-home t-kalender">
+          <div class="cardhead"><span class="pos-card-title ttl">Kalender – Heute</span><button class="act" data-act="flash" data-arg="Google-Calendar-Anbindung folgt in einem späteren Schritt">Google Calendar</button></div>
+          <div class="calwrap">
+            <div class="agenda" id="agendaList"></div>
+            <div class="mm">
+              <div class="mm-h"><button class="mm-nav" data-act="prevMonth">‹</button><span class="mm-t" id="mmTitle"></span><button class="mm-nav" data-act="nextMonth">›</button></div>
+              <div class="mm-grid" id="mmGrid"></div>
+              <span class="sel-line" id="selLine"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-soft lift sec sec-goals t-home" style="flex:1">
+          <div class="cardhead"><span class="pos-card-title ttl">Goals – Monatsziele</span><button class="act" data-act="flash" data-arg="Goals folgen in einem späteren Schritt">Alle →</button></div>
+          <div id="goalsList" style="display:contents"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<nav class="botnav"><div class="botnav-in" id="botnav"></div></nav>
+</div>
+</div>
+
+<!-- Drawer (mobil/Tablet) -->
+<div class="scrim drawer-scrim" id="drawerScrim" hidden>
+  <div class="drawer">
+    <div class="drawer-h"><span class="brandchip"><span class="ring"></span><span class="moon"></span></span><span class="pos-brand">Personal OS</span></div>
+    <div id="drawerNav" style="display:contents"></div>
+  </div>
+</div>
+
+<!-- Quick Create -->
+<div class="scrim" id="quickScrim" hidden>
+  <div class="card modal">
+    <div class="modal-h"><span class="pos-title">Quick Create</span><button class="iconbtn" style="width:34px;height:34px" data-act="closeQuick" aria-label="Schließen"><svg width="16" height="16"><use href="#i-x"/></svg></button></div>
+    <span class="pos-meta">Neue Aufgabe (Demo — landet noch nicht im Orbit)</span>
+    <input class="qcinput" id="quickInput" placeholder="z. B. Deploy vorbereiten …">
+    <div class="qcactions">
+      <button class="btns" data-act="closeQuick">Abbrechen</button>
+      <button class="btnp" id="btnAddTask" disabled>Hinzufügen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Board-Auswahl -->
+<div class="scrim" id="boardScrim" hidden>
+  <div class="card modal">
+    <div class="modal-h"><span class="pos-title">Orbit-Boards anzeigen</span><button class="iconbtn" style="width:34px;height:34px" data-act="closeBoards" aria-label="Schließen"><svg width="16" height="16"><use href="#i-x"/></svg></button></div>
+    <span class="pos-meta">Wähle, welche deiner Orbit-Boards im Cockpit angezeigt werden.</span>
+    <div class="boardpick" id="boardPick"></div>
+    <div class="qcactions">
+      <button class="btns" data-act="closeBoards">Abbrechen</button>
+      <button class="btnp" id="btnSaveBoards">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- Profilmenü -->
+<div class="pmenu" id="pmenu" hidden>
+  <div class="who" id="pmenuWho"></div>
+  <button class="mehrrow" data-act="gotoOrbit"><span class="mehr-ic"><svg width="16" height="16"><use href="#i-orbit"/></svg></span><span class="t">Orbit öffnen</span></button>
+  <button class="mehrrow" data-act="logout"><span class="mehr-ic"><svg width="16" height="16"><use href="#i-logout"/></svg></span><span class="t">Abmelden</span></button>
+</div>
+
+<div class="toast" id="toast" hidden><span class="tk"></span><span id="toastTx"></span></div>
+
+<!-- Icon-Sprite (aus dem Design) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></symbol>
+<symbol id="i-orbit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2.6"/><ellipse cx="12" cy="12" rx="10" ry="4.4" transform="rotate(-30 12 12)"/></symbol>
+<symbol id="i-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9h18M8 2.5v4M16 2.5v4"/></symbol>
+<symbol id="i-brain" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 0 0-3 3 3 3 0 0 0-1 5.8V16a3 3 0 0 0 4 2.8A3 3 0 0 0 16 16v-2.2A3 3 0 0 0 15 8a3 3 0 0 0-3-3Z"/><path d="M12 5v13.8"/></symbol>
+<symbol id="i-bulb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2Z"/></symbol>
+<symbol id="i-robot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="11" rx="3"/><path d="M12 8V4M8 13h.01M16 13h.01"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19"/></symbol>
+<symbol id="i-thermo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.8V5a2 2 0 1 0-4 0v9.8a4 4 0 1 0 4 0Z"/></symbol>
+<symbol id="i-doc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h8l4 4v16H6Z"/><path d="M14 2v4h4"/></symbol>
+<symbol id="i-coins" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></symbol>
+<symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></symbol>
+<symbol id="i-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 7 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.6 1.6 0 0 0 3.5 14H3a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.6 8a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.6 1.6 0 0 0 10 3.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 2.7 1.1 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V10a2 2 0 1 1 0 4h-.1"/></symbol>
+<symbol id="i-chevrons" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m13 17 5-5-5-5M6 17l5-5-5-5"/></symbol>
+<symbol id="i-chevR" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></symbol>
+<symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+<symbol id="i-more" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/></symbol>
+<symbol id="i-flame" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.4-.5-2-1-3-1.1-2.1-.2-4 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.2.4-2.3 1-3a2.5 2.5 0 0 0 2.5 2.5Z"/></symbol>
+<symbol id="i-heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7Z"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
+<symbol id="i-steps" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2-5 3 10 2-5h7"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></symbol>
+<symbol id="i-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 6 .5l2.5-2.5a4 4 0 0 0-5.7-5.7L11.5 8"/><path d="M14 10a4 4 0 0 0-6-.5L5.5 12a4 4 0 0 0 5.7 5.7L12.5 16"/></symbol>
+<symbol id="i-logout" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></symbol>
+<symbol id="i-goals" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.4"/></symbol>
+<symbol id="i-invest" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18 10 12l4 3 6-7"/><path d="M15 8h5v5"/></symbol>
+</defs></svg>
+
+<script>
+/* ============================================================
+   COCKPIT — Logik
+   Login + Nutzer: Supabase-Projekt "Orbit" (dieselben Konten wie
+   orbit.mumelter.org). Orbit-Widget liest die echten Boards
+   (RLS: nur eigene/beigetretene). Alle anderen Widgets zeigen
+   in Schritt 1 Dummy-Daten im Design der Figma-Vorlage.
+   ============================================================ */
+
+// === Supabase (gleiches Projekt wie ORBIT — gemeinsame Nutzer) ===
+const SUPABASE_URL = 'https://eqrzazmdamiplqiizrat.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_z0RG83SZ7ChiPVid-2ojLQ_4sqOJ2Iw'; // publishable key (öffentlich ok; RLS schützt die Daten)
+const ORBIT_URL = 'https://orbit.mumelter.org';
+
+let sb = null;
+try { if (window.supabase) sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }
+catch (e) { console.warn('Supabase-Init fehlgeschlagen:', e); }
+
+// Per Einladungs-/Reset-Link gekommen? (Hash lesen, bevor Supabase ihn verbraucht)
+const initialHash = location.hash || '';
+const cameFromInvite = /type=(invite|recovery|signup)/.test(initialHash) || /access_token=/.test(initialHash);
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+/* ---------- Zustand ---------- */
+let session = null;
+let appStarted = false;
+let boards = [];            // [{id,title,statuses,doneStatuses,tickets:[...]}]
+let prefs = { boardIds: null, activeBoard: null };   // aus cockpit_prefs (null = alle)
+let orbitStatusTab = 'all'; // mobile Ansicht
+let mobileTab = 'home';
+let navActive = 'HOME';
+let calMonthOffset = 0;
+let selectedDay = new Date().getDate();
+
+/* ---------- Dummy-Daten (Schritt 1, aus der Design-Vorlage) ---------- */
+const demoTasks = [
+  { id: 1, label: 'Supabase RLS testen', meta: '', done: false },
+  { id: 2, label: 'Whisper-Pipeline testen', meta: '', done: false },
+  { id: 3, label: 'Client Call — ACME', meta: '10:30', done: false },
+  { id: 4, label: 'Figma Handoff vorbereiten', meta: '', done: true },
+  { id: 5, label: 'Gym Training', meta: '19:00', done: false },
+];
+let localTasks = [];   // Quick-Create-Demo (nur lokal)
+let habits = [
+  { id: 'med', name: 'Meditation', streak: 12, done: true },
+  { id: 'read', name: 'Lesen 30 min', streak: 8, done: true },
+  { id: 'gym', name: 'Gym', streak: 4, done: false },
+  { id: 'sugar', name: 'Kein Zucker', streak: 21, done: true },
+  { id: 'journal', name: 'Journaling', streak: 15, done: false },
+];
+let devices = [
+  { id: 'living', name: 'Wohnzimmer', icon: 'bulb', on: true, onMeta: 'Ein · Warm', offMeta: 'Aus' },
+  { id: 'vacuum', name: 'Saugroboter', icon: 'robot', on: false, onMeta: 'Reinigt', offMeta: 'Dockt · 100%' },
+  { id: 'patio', name: 'Terrasse', icon: 'sun', on: false, onMeta: 'Ein', offMeta: 'Aus' },
+  { id: 'temp', name: 'Temperatur', icon: 'thermo', on: true, onMeta: 'Wohnzimmer · 22°', offMeta: 'Eco · 18°' },
+];
+const health = [
+  { icon: 'steps', label: 'Schritte', value: '8.240 / 12k', pct: 69 },
+  { icon: 'moon', label: 'Schlaf', value: '7h 10m', pct: 89 },
+  { icon: 'heart', label: 'Ruhepuls', value: '58 bpm', pct: 46 },
+  { icon: 'flame', label: 'Kalorien', value: '1.860 / 2.200', pct: 84 },
+];
+const allocations = [{ name: 'ETF All-World', pct: 62 }, { name: 'Krypto', pct: 18 }, { name: 'Cash', pct: 20 }];
+const goals = [
+  { name: 'Personal OS Launch', pct: 72 }, { name: '10 kg abnehmen', pct: 45 },
+  { name: '10 k € Umsatz', pct: 60 }, { name: 'Marathon Training', pct: 30 },
+];
+const brainRows = [
+  { icon: 'bulb', title: 'Content Ideas', meta: '8 neue Ideen' },
+  { icon: 'doc', title: 'Legal Notes', meta: '6 Dokumente' },
+  { icon: 'coins', title: 'Finance Thoughts', meta: '4 Notizen' },
+];
+const agendaRows = [
+  { time: '09:00', title: 'Team Standup', dur: '30 m' },
+  { time: '10:30', title: 'Client Call – ACME', dur: '1 h' },
+  { time: '14:00', title: 'Deep Work Session', dur: '2 h' },
+  { time: '19:00', title: 'Abendessen mit Lisa', dur: '2 h' },
+];
+const waveH = [10,18,26,14,30,22,12,28,34,20,16,24,10,30,26,14,22,32,18,12,26,20,30,16,24,14,28,10,22,18];
+const mehrItems = [
+  { icon: 'invest', label: 'Investments', act: 'flash', arg: 'Investments folgen in einem späteren Schritt' },
+  { icon: 'goals', label: 'Goals', act: 'flash', arg: 'Goals folgen in einem späteren Schritt' },
+  { icon: 'user', label: 'Profil', act: 'profile' },
+  { icon: 'link', label: 'Integrationen', act: 'flash', arg: 'Integrationen folgen in einem späteren Schritt' },
+  { icon: 'orbit', label: 'Orbit öffnen', act: 'gotoOrbit' },
+  { icon: 'logout', label: 'Abmelden', act: 'logout' },
+];
+
+/* ---------- Helfer ---------- */
+let toastT;
+function toast(msg) {
+  $('toastTx').textContent = msg;
+  $('toast').hidden = false;
+  clearTimeout(toastT);
+  toastT = setTimeout(() => { $('toast').hidden = true; }, 2600);
+}
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function fmtDeadline(dl) {
+  if (!dl) return '';
+  const t = todayStr();
+  if (dl < t) return 'überfällig';
+  if (dl === t) return 'heute';
+  const [y, m, d] = dl.split('-');
+  return d + '.' + m + '.';
+}
+function displayName() {
+  const email = (session && session.user && session.user.email) || '';
+  const raw = (session && session.user && session.user.user_metadata && session.user.user_metadata.name) || email.split('@')[0] || 'du';
+  return raw.charAt(0).toUpperCase() + raw.slice(1);
+}
+function greetingWord() {
+  const h = new Date().getHours();
+  return h < 11 ? 'Guten Morgen' : h < 18 ? 'Guten Tag' : 'Guten Abend';
+}
+function isoWeek(d) {
+  const dt = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const day = dt.getUTCDay() || 7;
+  dt.setUTCDate(dt.getUTCDate() + 4 - day);
+  const y0 = new Date(Date.UTC(dt.getUTCFullYear(), 0, 1));
+  return Math.ceil(((dt - y0) / 864e5 + 1) / 7);
+}
+const WD = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+const WD_S = ['So','Mo','Di','Mi','Do','Fr','Sa'];
+const MON = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+
+/* ---------- Orbit-Daten ---------- */
+function normBoard(row) {
+  const data = row.data || {};
+  const settings = data.settings || {};
+  const statuses = (settings.statuses || ['To Do', 'In Arbeit', 'Erledigt']).filter(s => !(settings.disabledStatuses || []).includes(s));
+  const doneStatuses = settings.doneStatuses || ['Erledigt'];
+  return {
+    id: row.id, title: row.title || settings.boardTitle || 'Board',
+    statuses, doneStatuses,
+    tickets: (data.tickets || []).map(t => ({
+      id: t.id, title: t.title || '', status: t.status || statuses[0],
+      prio: Number(t.prio) || 3, deadline: t.deadline || '', completedAt: t.completedAt || '',
+    })),
+  };
+}
+async function loadBoards() {
+  if (!sb || !session) return;
+  const { data, error } = await sb.from('boards').select('id,title,data').order('updated_at', { ascending: false });
+  if (error) { console.warn('Boards laden:', error); toast('⚠ Orbit-Boards nicht erreichbar — zeige Demo-Daten'); boards = []; return; }
+  boards = (data || []).map(normBoard);
+}
+async function loadPrefs() {
+  if (!sb || !session) return;
+  const { data, error } = await sb.from('cockpit_prefs').select('data').maybeSingle();
+  if (error) { console.warn('Prefs laden:', error); return; }
+  const d = (data && data.data) || {};
+  prefs.boardIds = Array.isArray(d.boardIds) ? d.boardIds : null;
+  prefs.activeBoard = d.activeBoard || null;
+}
+async function savePrefs() {
+  if (!sb || !session) return;
+  const { error } = await sb.from('cockpit_prefs').upsert({
+    user_id: session.user.id,
+    data: { boardIds: prefs.boardIds, activeBoard: prefs.activeBoard },
+    updated_at: new Date().toISOString(),
+  });
+  if (error) { console.warn('Prefs speichern:', error); toast('⚠ Einstellungen konnten nicht gespeichert werden'); }
+}
+function visibleBoards() {
+  if (!boards.length) return [];
+  if (!prefs.boardIds) return boards;
+  const v = boards.filter(b => prefs.boardIds.includes(b.id));
+  return v.length ? v : boards;
+}
+function activeBoard() {
+  const v = visibleBoards();
+  if (!v.length) return null;
+  return v.find(b => b.id === prefs.activeBoard) || v[0];
+}
+// Offene Aufgaben (fällig heute oder überfällig) über alle sichtbaren Boards
+function dueTasks() {
+  const t = todayStr();
+  const out = [];
+  for (const b of visibleBoards())
+    for (const tk of b.tickets)
+      if (!b.doneStatuses.includes(tk.status) && tk.deadline && tk.deadline <= t)
+        out.push({ label: tk.title, meta: fmtDeadline(tk.deadline), warn: tk.deadline < t, done: false });
+  out.sort((a, b) => (a.warn === b.warn ? 0 : a.warn ? -1 : 1));
+  return out;
+}
+
+/* ---------- Rendering ---------- */
+const NAV = [['HOME','home'],['ORBIT','orbit'],['KALENDER','calendar'],['HABITS','flame'],['GOALS','goals'],['HEALTH','heart'],['INVEST','invest'],['SMART HOME','bulb'],['AI BRAIN','brain']];
+const NAV2TAB = { HOME:'home', ORBIT:'orbit', KALENDER:'kalender', 'AI BRAIN':'aibrain', INVEST:'mehr', HABITS:'home', GOALS:'home', HEALTH:'home', 'SMART HOME':'home' };
+const BOTNAV = [['Home','home','home'],['Orbit','orbit','orbit'],['Kalender','calendar','kalender'],['AI Brain','brain','aibrain'],['Mehr','more','mehr']];
+
+function icon(name, size) {
+  return '<svg width="' + size + '" height="' + size + '"><use href="#i-' + name + '"/></svg>';
+}
+function chip(text, tone) {
+  return '<span class="chip chip-' + (tone || 'accent') + '">' + esc(text) + '</span>';
+}
+function ring(pct) {
+  const size = 46, stroke = 4, r = (size - stroke) / 2, c = 2 * Math.PI * r;
+  const dash = Math.min(100, Math.max(0, pct)) / 100 * c;
+  return '<span class="ringwrap"><svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '">' +
+    '<circle cx="23" cy="23" r="' + r + '" fill="none" stroke="rgba(240,237,250,0.12)" stroke-width="4"/>' +
+    '<circle cx="23" cy="23" r="' + r + '" fill="none" stroke="var(--accent-primary)" stroke-width="4" stroke-linecap="round" stroke-dasharray="' + dash + ' ' + c + '"/>' +
+    '</svg><span class="pct">' + Math.round(pct) + '%</span></span>';
+}
+function listRow(t, i, src) {
+  const meta = t.meta ? '<span class="mt' + (t.warn ? ' warn' : '') + '">' + esc(t.meta) + '</span>' : '';
+  return '<div class="lrow' + (t.done ? ' done' : '') + '"><button class="cb' + (t.done ? ' ck' : '') + '" data-act="toggleTask" data-src="' + src + '" data-arg="' + i + '" aria-pressed="' + t.done + '"></button><span class="tx">' + esc(t.label) + '</span>' + meta + '</div>';
+}
+function progress(pct) {
+  return '<div class="prog"><span style="width:' + Math.min(100, Math.max(0, pct)) + '%"></span></div>';
+}
+
+function renderHeader() {
+  const name = displayName();
+  const d = new Date();
+  const line = WD[d.getDay()] + ', ' + d.getDate() + '. ' + MON[d.getMonth()] + ' ' + d.getFullYear() + ' · KW ' + isoWeek(d);
+  const lineS = WD_S[d.getDay()] + ', ' + d.getDate() + '. ' + MON[d.getMonth()];
+  $('greeting').textContent = greetingWord() + ', ' + name;
+  $('greetingMob').textContent = greetingWord() + ', ' + name;
+  $('dateline').textContent = line;
+  $('datelineMob').textContent = lineS;
+  $('avatarName').textContent = name;
+  $('avatarPic').textContent = name.charAt(0).toUpperCase();
+  $('avatarPicMob').textContent = name.charAt(0).toUpperCase();
+  $('pmenuWho').textContent = (session && session.user && session.user.email) || '';
+}
+
+function renderNav() {
+  $('railNav').innerHTML = NAV.map(([label, ic]) =>
+    '<button class="navitem' + (navActive === label ? ' on' : '') + '" data-act="nav" data-arg="' + label + '"><span style="width:20px;height:20px;display:inline-flex">' + icon(ic, 20) + '</span><span class="lbl">' + label + '</span></button>').join('');
+  $('drawerNav').innerHTML = NAV.map(([label, ic]) =>
+    '<button class="drow' + (navActive === label ? ' on' : '') + '" data-act="nav" data-arg="' + label + '"><span class="ic">' + icon(ic, 18) + '</span><span class="t">' + label + '</span></button>').join('');
+  $('botnav').innerHTML = BOTNAV.map(([label, ic, tab]) =>
+    '<button class="bnitem' + (mobileTab === tab ? ' on' : '') + '" data-act="mobTab" data-arg="' + tab + '"><span class="ic">' + icon(ic, 22) + '</span><span class="bl">' + label + '</span></button>').join('');
+  $('osapp').dataset.tab = mobileTab;
+}
+
+function currentTasks() {
+  const due = dueTasks();
+  const base = due.length ? due : demoTasks;
+  return base.concat(localTasks);
+}
+
+function renderKpis() {
+  const tasks = currentTasks();
+  const open = tasks.filter(t => !t.done).length;
+  const done = tasks.length - open;
+  const pct = tasks.length ? Math.round(done / tasks.length * 100) : 0;
+  const hbDone = habits.filter(h => h.done).length;
+  const hbPct = Math.round(hbDone / habits.length * 100);
+  $('kpirow').innerHTML =
+    '<div class="kpi lift"><span class="lb">Daily Tasks</span><div class="vrow"><span class="v">' + open + '</span>' + ring(pct) + '</div><span class="sub">' + open + ' offen · ' + done + ' fertig</span><button class="go" data-act="mobTab" data-arg="orbit">Alle Aufgaben →</button></div>' +
+    '<div class="kpi lift"><span class="lb">Habits</span><div class="vrow"><span class="v">' + hbDone + '/' + habits.length + '</span>' + ring(hbPct) + '</div><span class="sub">Gym noch offen heute</span><button class="go" data-act="flash" data-arg="Habits folgen in einem späteren Schritt">Habits →</button></div>' +
+    '<div class="kpi lift"><span class="lb">Health</span><div class="vrow"><span class="v">8.240</span>' + ring(69) + '</div><span class="sub">Schritte · Ziel 12k</span><button class="go" data-act="flash" data-arg="Health folgt in einem späteren Schritt">Health →</button></div>' +
+    '<div class="kpi lift"><span class="lb">Invest</span><div class="vrow"><span class="v">+3,2%</span>' + ring(58) + '</div><span class="sub">Portfolio diese Woche</span><button class="go" data-act="flash" data-arg="Investments folgen in einem späteren Schritt">Investments →</button></div>';
+  $('hbMeta').textContent = hbDone + '/' + habits.length + ' heute';
+}
+
+const COL_DOTS = ['var(--violet-300)', 'var(--accent-warning)', 'var(--accent-info)', 'var(--accent-success)', 'var(--gray-500)'];
+function ticketChip(tk, board) {
+  if (board.doneStatuses.includes(tk.status)) return chip('Done', 'success');
+  if (tk.deadline && tk.deadline < todayStr()) return chip('Überfällig', 'danger');
+  if (tk.prio === 1) return chip('P1 · Höchste', 'danger');
+  if (tk.prio === 2) return chip('P2 · Hoch', 'warning');
+  return '';
+}
+
+function renderOrbit() {
+  const vis = visibleBoards();
+  const b = activeBoard();
+
+  // Board-Wechsler (nur wenn mehrere Boards sichtbar)
+  const tw = $('orbitTabsWrap');
+  if (vis.length > 1) {
+    tw.hidden = false;
+    tw.innerHTML = vis.map(x => '<button class="otab' + (b && x.id === b.id ? ' on' : '') + '" data-act="pickBoard" data-arg="' + x.id + '">' + esc(x.title) + '</button>').join('');
+  } else { tw.hidden = true; tw.innerHTML = ''; }
+  $('orbitBoardChip').textContent = b ? b.title : 'Kein Board';
+
+  // Linke Spalte: Meine Aufgaben heute
+  const due = dueTasks();
+  const myTasks = (due.length ? due : demoTasks).slice(0, 5);
+  const openCount = myTasks.filter(t => !t.done).length;
+  let html = '<div class="mytasks"><div class="mytasks-h"><span class="t">Meine Aufgaben heute</span><span class="pill">' + openCount + '</span></div>' +
+    myTasks.map((t, i) => listRow(t, i, due.length ? 'due' : 'demo')).join('') +
+    '<div style="flex:1"></div><button class="addcard" data-act="openQuick">+ Neue Aufgabe</button></div>';
+
+  // Kanban-Spalten des aktiven Boards
+  if (b) {
+    html += b.statuses.map((st, i) => {
+      const tks = b.tickets.filter(t => t.status === st);
+      const shown = tks.slice(0, 3);
+      return '<div class="ocol"><div class="ocol-h"><span class="dotmark" style="background:' + COL_DOTS[i % COL_DOTS.length] + '"></span><span class="t" title="' + esc(st) + '">' + esc(st) + '</span><span class="c">' + tks.length + '</span></div>' +
+        shown.map(tk => '<div class="ticket" data-act="openTicket" data-arg="' + esc(tk.id) + '"><span class="ticket-t">' + esc(tk.title) + '</span>' + ticketChip(tk, b) + '</div>').join('') +
+        (tks.length > shown.length ? '<span class="morecard">+ ' + (tks.length - shown.length) + ' weitere</span>' : '') +
+        '<div style="flex:1"></div><button class="addcard" data-act="gotoOrbit">+ Neue Karte</button></div>';
+    }).join('');
+  } else {
+    html += '<div class="empty" style="flex:1;align-self:center">Keine Orbit-Boards gefunden. Lege in <a href="' + ORBIT_URL + '" target="_blank" rel="noopener">Orbit</a> ein Board an.</div>';
+  }
+  $('orbitFull').innerHTML = html;
+
+  // Kompakt (Tablet/Mobil): Status-Tabs + Liste
+  const statuses = b ? b.statuses : [];
+  const tabs = [['Alle', 'all']].concat(statuses.map(s => [s, s]));
+  $('orbitStatusTabs').innerHTML = tabs.map(([label, key]) =>
+    '<button class="otab' + (orbitStatusTab === key ? ' on' : '') + '" data-act="orbitTab" data-arg="' + esc(key) + '">' + esc(label) + '</button>').join('');
+  const compact = b ? b.tickets.filter(t => orbitStatusTab === 'all' || t.status === orbitStatusTab).slice(0, 8) : [];
+  $('orbitCompact').innerHTML = compact.length
+    ? compact.map(tk => '<div class="ticket" data-act="openTicket" data-arg="' + esc(tk.id) + '"><span class="ticket-t">' + esc(tk.title) + '</span><div class="tk-meta"><span class="tk-col">' + esc(tk.status) + '</span>' + (b ? ticketChip(tk, b) : '') + '</div></div>').join('')
+    : '<div class="empty">Keine Karten in dieser Spalte.</div>';
+}
+
+function renderLists() {
+  const tasks = currentTasks().slice(0, 6);
+  $('tasksMob').innerHTML = tasks.length
+    ? tasks.map((t, i) => listRow(t, i, 'mob')).join('')
+    : '<div class="empty">Alle Aufgaben erledigt. Guter Fokus-Tag.</div>';
+
+  $('habitsList').innerHTML = habits.map((h, i) =>
+    '<div class="row"><div class="lrow' + (h.done ? ' done' : '') + '" style="flex:1"><button class="cb' + (h.done ? ' ck' : '') + '" data-act="toggleHabit" data-arg="' + i + '" aria-pressed="' + h.done + '"></button><span class="tx">' + esc(h.name) + '</span></div><span class="ic" style="color:' + (h.done ? 'var(--accent-warning)' : 'var(--text-muted)') + '">' + icon('flame', 15) + '</span><span class="stat-v" style="width:26px;text-align:right">' + h.streak + '</span></div>').join('');
+
+  $('healthList').innerHTML = health.map(m =>
+    '<div class="stat"><div class="stat-h"><span class="stat-l"><span class="ic" style="margin-right:8px;vertical-align:-2px">' + icon(m.icon, 15) + '</span>' + esc(m.label) + '</span><span class="stat-v">' + esc(m.value) + '</span></div>' + progress(m.pct) + '</div>').join('');
+
+  $('allocList').innerHTML = allocations.map(a =>
+    '<div class="stat"><div class="stat-h"><span class="stat-l">' + esc(a.name) + '</span><span class="stat-v">' + a.pct + ' %</span></div>' + progress(a.pct) + '</div>').join('');
+
+  $('goalsList').innerHTML = goals.map(g =>
+    '<div class="stat"><div class="stat-h"><span class="stat-l">' + esc(g.name) + '</span><span class="stat-v">' + g.pct + ' %</span></div>' + progress(g.pct) + '</div>').join('');
+
+  $('brainList').innerHTML = brainRows.map(bR =>
+    '<div class="brainrow"><span class="mehr-ic" style="width:32px;height:32px">' + icon(bR.icon, 16) + '</span><span class="t">' + esc(bR.title) + '</span><span class="m">' + esc(bR.meta) + '</span></div>').join('');
+
+  $('devgrid').innerHTML = devices.map((dv, i) =>
+    '<div class="dev"><div class="dev-h"><span class="ic" style="color:' + (dv.on ? 'var(--text-accent)' : 'var(--text-muted)') + '">' + icon(dv.icon, 18) + '</span><button class="tgl' + (dv.on ? ' on' : '') + '" data-act="toggleDevice" data-arg="' + i + '" role="switch" aria-checked="' + dv.on + '"><span class="kn"></span></button></div><span class="dev-nm">' + esc(dv.name) + '</span><span class="dev-mt">' + esc(dv.on ? dv.onMeta : dv.offMeta) + '</span></div>').join('');
+
+  $('wave').innerHTML = waveH.map((h, i) =>
+    '<span style="height:' + h + 'px;background:' + (i < 12 ? 'var(--gradient-accent)' : 'rgba(196,181,253,0.28)') + '"></span>').join('');
+
+  $('mehrList').innerHTML = mehrItems.map(mi =>
+    '<button class="mehrrow" data-act="' + mi.act + '"' + (mi.arg ? ' data-arg="' + esc(mi.arg) + '"' : '') + '><span class="mehr-ic">' + icon(mi.icon, 16) + '</span><span class="t">' + esc(mi.label) + '</span><svg width="16" height="16" class="ic muted"><use href="#i-chevR"/></svg></button>').join('');
+}
+
+function renderBrief() {
+  const due = dueTasks();
+  const open = due.length ? due.filter(t => !t.done).length : demoTasks.filter(t => !t.done).length;
+  const b = activeBoard();
+  $('briefList').innerHTML =
+    '<div class="brief-item"><span class="bd"></span><span class="tx">Du hast heute <strong>' + open + ' offene Aufgaben</strong>' + (b ? ' im Orbit' : '') + '</span></div>' +
+    '<div class="brief-item"><span class="bd"></span><span class="tx">2 Meetings im Kalender</span></div>' +
+    '<div class="brief-item"><span class="bd"></span><span class="tx">Gym-Habit ist noch offen</span></div>' +
+    '<div class="brief-item"><span class="bd"></span><span class="tx">Guter Fokus-Tag für Deep Work</span></div>';
+}
+
+function renderAgenda() {
+  $('agendaList').innerHTML = agendaRows.map(ev =>
+    '<button class="agitem" data-act="flash" data-arg="' + esc(ev.time + ' · ' + ev.title) + '"><span class="tm">' + ev.time + '</span><span class="ti">' + esc(ev.title) + '</span><span class="du">' + ev.dur + '</span></button>').join('') +
+    '<button class="act" style="letter-spacing:.2px;text-transform:none;font-weight:500;font-family:var(--font-body);font-size:12px" data-act="mobTab" data-arg="kalender">Alle Termine anzeigen →</button>';
+}
+
+function renderCal() {
+  const now = new Date();
+  const view = new Date(now.getFullYear(), now.getMonth() + calMonthOffset, 1);
+  $('mmTitle').textContent = MON[view.getMonth()] + ' ' + view.getFullYear();
+  const daysIn = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
+  const firstWd = (view.getDay() + 6) % 7; // Mo=0
+  const dots = { 15: 1, 22: 1, 28: 1 };
+  let html = ['Mo','Di','Mi','Do','Fr','Sa','So'].map(w => '<span class="mm-wd">' + w + '</span>').join('');
+  html += '<span></span>'.repeat(firstWd);
+  for (let d = 1; d <= daysIn; d++) {
+    const sel = d === selectedDay && calMonthOffset === 0;
+    html += '<button class="mm-day' + (sel ? ' sel' : '') + '" data-act="selDay" data-arg="' + d + '">' + d + (dots[d] ? '<span class="d"></span>' : '') + '</button>';
+  }
+  $('mmGrid').innerHTML = html;
+  $('selLine').textContent = 'Ausgewählt: ' + selectedDay + '. ' + MON[view.getMonth()] + ' ' + view.getFullYear();
+}
+
+function renderBoardPick() {
+  const sel = prefs.boardIds;
+  $('boardPick').innerHTML = boards.length ? boards.map(b => {
+    const on = !sel || sel.includes(b.id);
+    return '<button class="bp-row" data-bid="' + b.id + '"><span class="cb lrow-cb ' + (on ? 'ck' : '') + '" style="width:16px;height:16px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;' + (on ? 'background:var(--gradient-accent)' : 'box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.18)') + '">' + (on ? '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>' : '') + '</span><span class="t">' + esc(b.title) + '</span><span class="pos-meta">' + b.tickets.length + (b.tickets.length === 1 ? ' Ticket' : ' Tickets') + '</span></button>';
+  }).join('') : '<div class="empty">Keine Boards gefunden.</div>';
+}
+
+function renderAll() {
+  renderHeader(); renderNav(); renderKpis(); renderOrbit(); renderLists(); renderBrief(); renderAgenda(); renderCal();
+}
+
+/* ---------- Aktionen ---------- */
+let pickDraft = null; // Set der ausgewählten Board-IDs im Modal
+
+function handleAct(act, arg, el, e) {
+  switch (act) {
+    case 'nav':
+      navActive = arg; mobileTab = NAV2TAB[arg] || 'home';
+      $('drawerScrim').hidden = true; renderNav(); renderOrbit();
+      if (['HABITS','GOALS','HEALTH','INVEST','SMART HOME'].includes(arg)) toast(arg.charAt(0) + arg.slice(1).toLowerCase() + ' folgt in einem späteren Schritt');
+      break;
+    case 'mobTab': {
+      mobileTab = arg;
+      const rev = { home: 'HOME', orbit: 'ORBIT', kalender: 'KALENDER', aibrain: 'AI BRAIN', mehr: 'INVEST' };
+      navActive = rev[arg] || 'HOME'; renderNav();
+      break;
+    }
+    case 'openDrawer': $('drawerScrim').hidden = false; break;
+    case 'openQuick': $('quickScrim').hidden = false; $('quickInput').value = ''; $('btnAddTask').disabled = true; setTimeout(() => $('quickInput').focus(), 40); break;
+    case 'closeQuick': $('quickScrim').hidden = true; break;
+    case 'openBoards': pickDraft = null; renderBoardPick(); $('boardScrim').hidden = false; break;
+    case 'closeBoards': $('boardScrim').hidden = true; break;
+    case 'pickBoard': prefs.activeBoard = arg; savePrefs(); renderOrbit(); renderBrief(); break;
+    case 'orbitTab': orbitStatusTab = arg; renderOrbit(); break;
+    case 'openTicket': window.open(ORBIT_URL + '/#ticket=' + encodeURIComponent(arg), '_blank', 'noopener'); break;
+    case 'gotoOrbit': window.open(ORBIT_URL, '_blank', 'noopener'); break;
+    case 'toggleTask': {
+      const i = parseInt(arg, 10), src = el.dataset.src;
+      if (src === 'due') { toast('Aufgaben aus Orbit bitte im Orbit Tool abhaken'); break; }
+      if (src === 'demo' || src === 'mob') {
+        const tasks = currentTasks(); const t = tasks[i];
+        if (t) t.done = !t.done;
+      }
+      renderKpis(); renderOrbit(); renderLists(); renderBrief();
+      break;
+    }
+    case 'toggleHabit': {
+      const h = habits[parseInt(arg, 10)];
+      if (h) { h.done = !h.done; h.streak += h.done ? 1 : -1; }
+      renderKpis(); renderLists();
+      break;
+    }
+    case 'toggleDevice': {
+      const dv = devices[parseInt(arg, 10)];
+      if (dv) dv.on = !dv.on;
+      renderLists();
+      break;
+    }
+    case 'prevMonth': calMonthOffset--; renderCal(); break;
+    case 'nextMonth': calMonthOffset++; renderCal(); break;
+    case 'selDay': selectedDay = parseInt(arg, 10); renderCal(); break;
+    case 'ring': toast('Keine neuen Benachrichtigungen'); break;
+    case 'profile': {
+      const m = $('pmenu');
+      m.hidden = !m.hidden;
+      if (!m.hidden && e) {
+        const r = e.target.closest('.avatar, .mehrrow').getBoundingClientRect();
+        m.style.top = Math.min(window.innerHeight - 180, r.bottom + 8) + 'px';
+        m.style.left = Math.max(12, Math.min(window.innerWidth - 252, r.right - 240)) + 'px';
+      }
+      break;
+    }
+    case 'logout':
+      $('pmenu').hidden = true;
+      if (sb) sb.auth.signOut();
+      break;
+    case 'flash': toast(arg); break;
+  }
+}
+
+document.addEventListener('click', e => {
+  const bp = e.target.closest && e.target.closest('.bp-row');
+  if (bp) {
+    if (!pickDraft) pickDraft = new Set((prefs.boardIds || boards.map(b => b.id)));
+    const id = bp.dataset.bid;
+    if (pickDraft.has(id)) pickDraft.delete(id); else pickDraft.add(id);
+    prefsDraftRender();
+    return;
+  }
+  const el = e.target.closest && e.target.closest('[data-act]');
+  if (el) { handleAct(el.getAttribute('data-act'), el.getAttribute('data-arg'), el, e); return; }
+  if (!e.target.closest('.pmenu') && !e.target.closest('.avatar')) $('pmenu').hidden = true;
+});
+function prefsDraftRender() {
+  const saved = prefs.boardIds;
+  prefs.boardIds = Array.from(pickDraft);
+  renderBoardPick();
+  prefs.boardIds = saved;
+}
+$('btnSaveBoards').onclick = async () => {
+  if (pickDraft) {
+    prefs.boardIds = pickDraft.size === boards.length ? null : Array.from(pickDraft);
+    if (prefs.boardIds && prefs.boardIds.length === 0) prefs.boardIds = null;
+    const v = visibleBoards();
+    if (!v.find(b => b.id === prefs.activeBoard)) prefs.activeBoard = v.length ? v[0].id : null;
+    await savePrefs();
+  }
+  $('boardScrim').hidden = true;
+  renderOrbit(); renderKpis(); renderBrief();
+  toast('✓ Board-Auswahl gespeichert');
+};
+
+// Scrims schließen bei Klick auf den Hintergrund
+for (const id of ['drawerScrim', 'quickScrim', 'boardScrim'])
+  $(id).addEventListener('click', e => { if (e.target === $(id)) $(id).hidden = true; });
+
+// Quick Create (Demo: lokale Aufgabe)
+$('quickInput').addEventListener('input', () => { $('btnAddTask').disabled = !$('quickInput').value.trim(); });
+$('quickInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnAddTask').click(); });
+$('btnAddTask').onclick = () => {
+  const txt = $('quickInput').value.trim();
+  if (!txt) return;
+  localTasks.push({ id: Date.now(), label: txt, meta: '', done: false });
+  $('quickScrim').hidden = true;
+  renderKpis(); renderOrbit(); renderLists(); renderBrief();
+  toast('Aufgabe hinzugefügt (lokal — Orbit-Anbindung folgt)');
+};
+
+// AI-Box (Demo-Antwort wie im Design)
+let aiT;
+$('aiInput').addEventListener('input', () => { $('aiSend').disabled = !$('aiInput').value.trim(); });
+$('aiInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('aiSend').click(); });
+$('aiSend').onclick = () => {
+  if (!$('aiInput').value.trim()) return;
+  $('aiInput').value = ''; $('aiSend').disabled = true;
+  $('aiReply').hidden = true; $('aiLoad').hidden = false;
+  clearTimeout(aiT);
+  aiT = setTimeout(() => {
+    $('aiLoad').hidden = true;
+    $('aiReply').textContent = 'Basierend auf deinem Tag: Blocke 14:00–16:00 für Deep Work und verschiebe den Gym-Slot auf 19:00. Ich habe 3 passende Orbit-Tickets markiert. (Demo — echte AI-Anbindung folgt)';
+    $('aiReply').hidden = false;
+  }, 1100);
+};
+
+// ⌘K fokussiert die Suche
+document.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); $('searchInput').focus(); }
+});
+
+/* ---------- Auth-Flow (gleiches Muster wie ORBIT) ---------- */
+function setAuthMode(mode) {
+  const show = (id, on) => { $(id).hidden = !on; };
+  $('loginErr').hidden = true; $('loginErr').classList.remove('ok');
+  show('loginEmail', mode !== 'setpw');
+  show('loginPass', mode === 'login');
+  show('loginNewPass', mode === 'setpw');
+  show('btnLogin', mode === 'login');
+  show('btnForgot', mode === 'login');
+  show('btnSendReset', mode === 'forgot');
+  show('btnBackLogin', mode === 'forgot');
+  show('btnSetPass', mode === 'setpw');
+  if (mode === 'login') { $('loginHead').textContent = 'Cockpit — Anmelden'; $('loginIntro').textContent = 'Melde dich mit deinem Orbit-Konto an (gleiche E-Mail, gleiches Passwort). Zugang nur auf Einladung.'; }
+  else if (mode === 'forgot') { $('loginHead').textContent = 'Passwort zurücksetzen'; $('loginIntro').textContent = 'Gib deine E-Mail ein — wir senden dir einen Link zum Zurücksetzen. Das Passwort gilt für Orbit UND Cockpit.'; }
+  else { $('loginHead').textContent = 'Passwort festlegen'; $('loginIntro').textContent = 'Lege jetzt dein Passwort fest, um deinen Zugang zu aktivieren.'; }
+}
+function loginErr(msg, ok) {
+  $('loginErr').textContent = msg; $('loginErr').hidden = false;
+  $('loginErr').classList.toggle('ok', !!ok);
+}
+$('btnLogin').onclick = async () => {
+  const email = $('loginEmail').value.trim().toLowerCase();
+  const password = $('loginPass').value;
+  if (!email || !password) { loginErr('Bitte E-Mail und Passwort eingeben.'); return; }
+  if (!sb) { loginErr('Supabase ist nicht konfiguriert.'); return; }
+  $('loginErr').hidden = true;
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  if (error) loginErr('E-Mail oder Passwort falsch.');
+};
+$('loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnLogin').click(); });
+$('btnForgot').onclick = () => setAuthMode('forgot');
+$('btnBackLogin').onclick = () => setAuthMode('login');
+$('btnSendReset').onclick = async () => {
+  const email = $('loginEmail').value.trim().toLowerCase();
+  if (!email) { loginErr('Bitte E-Mail eingeben.'); return; }
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+  if (error) loginErr('Fehler: ' + error.message);
+  else loginErr('✓ Falls ein Konto existiert, ist eine E-Mail mit Reset-Link unterwegs.', true);
+};
+$('btnSetPass').onclick = async () => {
+  const pw = $('loginNewPass').value;
+  if (pw.length < 6) { loginErr('Passwort: mindestens 6 Zeichen.'); return; }
+  const { error } = await sb.auth.updateUser({ password: pw });
+  if (error) { loginErr('Fehler: ' + error.message); return; }
+  try { history.replaceState(null, '', location.pathname); } catch (e) {}
+  const { data } = await sb.auth.getSession();
+  if (data && data.session) startApp(data.session);
+  else setAuthMode('login');
+};
+$('loginNewPass').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnSetPass').click(); });
+
+/* ---------- App-Start ---------- */
+async function startApp(s) {
+  if (appStarted) { session = s; return; }
+  appStarted = true;
+  session = s;
+  $('loginOverlay').hidden = true;
+  $('appRoot').hidden = false;
+  renderHeader(); renderNav(); renderAgenda(); renderCal(); renderLists();
+  await Promise.all([loadBoards(), loadPrefs()]);
+  renderAll();
+  // Realtime: Board-Änderungen aus Orbit live übernehmen
+  try {
+    sb.channel('cockpit-boards')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'boards' }, async () => {
+        await loadBoards(); renderKpis(); renderOrbit(); renderBrief();
+      })
+      .subscribe();
+  } catch (e) { console.warn('Realtime nicht verfügbar:', e); }
+}
+function showLogin() {
+  appStarted = false; session = null; boards = [];
+  $('appRoot').hidden = true;
+  $('loginOverlay').hidden = false;
+  setAuthMode('login');
+}
+
+if (sb) {
+  sb.auth.onAuthStateChange((event, s) => {
+    if (event === 'PASSWORD_RECOVERY') { $('loginOverlay').hidden = false; $('appRoot').hidden = true; appStarted = false; setAuthMode('setpw'); return; }
+    if (event === 'SIGNED_OUT') { showLogin(); return; }
+    if (s) { if (cameFromInvite && event === 'SIGNED_IN' && /type=(invite|recovery)/.test(initialHash)) { $('loginOverlay').hidden = false; setAuthMode('setpw'); return; } startApp(s); }
+  });
+  sb.auth.getSession().then(({ data }) => {
+    if (data && data.session) {
+      if (cameFromInvite && /type=(invite|recovery)/.test(initialHash)) { setAuthMode('setpw'); return; }
+      startApp(data.session);
+    }
+  });
+} else {
+  loginErr('Supabase ist nicht konfiguriert (URL/Key im Code prüfen).');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+/* Personal OS type system.
+   The source file defines no named Figma text styles — these classes are
+   distilled from the type actually used across the dashboard. Two families:
+   Rajdhani (display + all-caps labels) and Inter (body + meta).
+   Sizes/line-heights/letter-spacing are transcribed verbatim from the source. */
+
+:root {
+  --text-display-size: 28px;    /* Greeting */
+  --text-title-size: 20px;      /* Section title */
+  --text-card-title-size: 16px; /* Card header */
+  --text-metric-size: 30px;     /* KPI number */
+  --text-body-size: 14px;
+  --text-meta-size: 12px;
+}
+
+/* ---- Display (Rajdhani) ---- */
+.pos-display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 28px;
+  line-height: 40px;
+  letter-spacing: 0.5px;
+  color: var(--text-primary);
+}
+.pos-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 20px;
+  line-height: 28px;
+  letter-spacing: 0.5px;
+  color: var(--text-primary);
+}
+.pos-card-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: 0.6px;
+  color: var(--text-primary);
+}
+.pos-metric {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 30px;
+  line-height: 100%;
+  color: var(--gray-100);
+}
+
+/* ---- Labels (Rajdhani, all-caps) ---- */
+.pos-label {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--text-accent);
+}
+.pos-nav-label {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 11px;
+  line-height: 100%;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.pos-brand {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 100%;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gray-100);
+}
+
+/* ---- Body (Inter) ---- */
+.pos-body {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-primary);
+}
+.pos-meta {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.2px;
+  color: var(--text-secondary);
+}
+.pos-caption {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 11px;
+  line-height: 16px;
+  letter-spacing: 0.2px;
+  color: var(--text-muted);
+}

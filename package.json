@@ -1,0 +1,12 @@
+{
+  "name": "cockpit",
+  "private": true,
+  "description": "Personal OS Cockpit — Dashboard auf dashboard.mumelter.org (Design: Figma 'Personal OS')",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^4"
+  }
+}

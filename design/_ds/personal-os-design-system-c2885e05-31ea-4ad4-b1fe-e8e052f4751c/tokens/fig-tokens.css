@@ -1,0 +1,69 @@
+/* Generated from Figma Variables. First mode = :root default.
+   FLOAT tokens are unitless — multiply by 1px in calc() where a length is needed. */
+
+:root {
+  --accent-danger: var(--rose-400); /* @kind color */
+  --accent-deep: var(--violet-700); /* @kind color */
+  --accent-glow: var(--violet-400); /* @kind color */
+  --accent-info: var(--sky-400); /* @kind color */
+  --accent-primary: var(--violet-500); /* @kind color */
+  --accent-success: var(--green-400); /* @kind color */
+  --accent-warning: var(--amber-400); /* @kind color */
+  --amber-400: rgb(251,191,36); /* @kind color */
+  --background-base: var(--space-950); /* @kind color */
+  --background-raised: var(--space-900); /* @kind color */
+  --blur-ambient: 80; /* @kind other */
+  --blur-glass: 24; /* @kind other */
+  --border-accent: rgba(139,92,246,0.35); /* @kind color */
+  --border-focus: rgba(167,139,250,0.8); /* @kind color */
+  --border-subtle: rgba(255,255,255,0.08); /* @kind color */
+  --gray-100: rgb(242,240,250); /* @kind color */
+  --gray-300: rgb(200,197,219); /* @kind color */
+  --gray-400: rgb(166,163,190); /* @kind color */
+  --gray-500: rgb(134,130,164); /* @kind color */
+  --green-400: rgb(74,222,128); /* @kind color */
+  --radius-full: 999;
+  --radius-lg: 16;
+  --radius-md: 12;
+  --radius-sm: 8;
+  --radius-xl: 20;
+  --rose-400: rgb(251,113,133); /* @kind color */
+  --sky-400: rgb(56,189,248); /* @kind color */
+  --space-600: rgb(38,28,78); /* @kind color */
+  --space-700: rgb(27,20,56); /* @kind color */
+  --space-800: rgb(19,14,40); /* @kind color */
+  --space-900: rgb(11,8,26); /* @kind color */
+  --space-950: rgb(6,4,16); /* @kind color */
+  --space-card-gap: 24;
+  --space-card-pad-h: 20;
+  --space-card-pad-v: 18;
+  --space-content-sm: 12;
+  --space-kpi-pad-h: 18;
+  --space-kpi-pad-v: 16;
+  --space-outer-margin: 32;
+  --space-section: 24;
+  --spacing-2xl: 32;
+  --spacing-3xl: 40;
+  --spacing-lg: 20;
+  --spacing-md: 16;
+  --spacing-sm: 12;
+  --spacing-xl: 24;
+  --spacing-xs: 8;
+  --spacing-xxs: 4;
+  --stroke-hairline: 1;
+  --stroke-medium: 1.5;
+  --surface-card: rgba(21,16,39,0.68); /* @kind color */
+  --surface-elevated: rgba(27,20,56,0.85); /* @kind color */
+  --surface-inset: rgba(11,8,26,0.6); /* @kind color */
+  --text-accent: var(--violet-300); /* @kind color */
+  --text-muted: var(--gray-500); /* @kind color */
+  --text-on-accent: var(--white); /* @kind color */
+  --text-primary: var(--gray-100); /* @kind color */
+  --text-secondary: var(--gray-400); /* @kind color */
+  --violet-300: rgb(196,181,253); /* @kind color */
+  --violet-400: rgb(167,139,250); /* @kind color */
+  --violet-500: rgb(139,92,246); /* @kind color */
+  --violet-600: rgb(124,58,237); /* @kind color */
+  --violet-700: rgb(109,40,217); /* @kind color */
+  --white: rgb(255,255,255); /* @kind color */
+}

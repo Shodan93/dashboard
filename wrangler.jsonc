@@ -1,0 +1,10 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "cockpit",
+  "compatibility_date": "2026-07-01",
+  "observability": { "enabled": true },
+  // Reine Static-Assets-Site (wie Orbit, nur ohne eigenen Worker-Code).
+  "assets": { "directory": "./public", "not_found_handling": "single-page-application" },
+  // Custom Domain: legt DNS-Eintrag + Zertifikat in der Zone mumelter.org automatisch an.
+  "routes": [{ "pattern": "dashboard.mumelter.org", "custom_domain": true }]
+}

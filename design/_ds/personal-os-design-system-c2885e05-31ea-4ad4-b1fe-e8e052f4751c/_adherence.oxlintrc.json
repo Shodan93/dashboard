@@ -1,0 +1,380 @@
+{
+  "plugins": [
+    "react",
+    "import"
+  ],
+  "rules": {
+    "react/forbid-elements": [
+      "warn",
+      {
+        "forbid": []
+      }
+    ],
+    "no-restricted-imports": [
+      "warn",
+      {
+        "patterns": [
+          {
+            "group": [
+              "components/buttons/**",
+              "components/cards/**",
+              "components/data/**",
+              "components/forms/**",
+              "components/navigation/**",
+              "ui_kits/dashboard/**"
+            ],
+            "message": "Import design-system components from 'index.js', not component internals."
+          }
+        ]
+      }
+    ],
+    "no-restricted-syntax": [
+      "warn",
+      {
+        "selector": "Literal[value=/#[0-9a-fA-F]{3,8}\\b/]",
+        "message": "Raw hex color — use a design-system color token via var()."
+      },
+      {
+        "selector": "Literal[value=/\\b\\d+px\\b/]",
+        "message": "Raw px value — use a design-system spacing token via var()."
+      },
+      {
+        "selector": "Literal[value=/font-family\\s*:\\s*(?!['\\\"]?(?:Inter|Rajdhani))/i]",
+        "message": "Font not provided by the design system. Available: Inter, Rajdhani."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='AISendButton'] > JSXAttribute > JSXIdentifier[name!=/^(?:state|onClick|style|className|key|ref|className|style|children)$/]",
+        "message": "<AISendButton> doesn't accept that prop. Declared props: state, onClick, style, className."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='AISendButton'] > JSXAttribute[name.name='state'] > Literal[value!=/^(?:default|hover|pressed|focus|disabled)$/]",
+        "message": "<AISendButton> state must be one of 'default' | 'hover' | 'pressed' | 'focus' | 'disabled'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='BaseCard'] > JSXAttribute > JSXIdentifier[name!=/^(?:elevation|padding|children|style|className|key|ref|className|style|children)$/]",
+        "message": "<BaseCard> doesn't accept that prop. Declared props: elevation, padding, children, style, className."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='BaseCard'] > JSXAttribute[name.name='elevation'] > Literal[value!=/^(?:card|glow|elevated|soft)$/]",
+        "message": "<BaseCard> elevation must be one of 'card' | 'glow' | 'elevated' | 'soft'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='IconContainer'] > JSXAttribute > JSXIdentifier[name!=/^(?:icon|size|style|className|key|ref|className|style|children)$/]",
+        "message": "<IconContainer> doesn't accept that prop. Declared props: icon, size, style, className."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='KPICard'] > JSXAttribute > JSXIdentifier[name!=/^(?:label|value|progress|subtitle|action|onAction|style|className|key|ref|className|style|children)$/]",
+        "message": "<KPICard> doesn't accept that prop. Declared props: label, value, progress, subtitle, action, onAction, style, className."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='ListRow'] > JSXAttribute > JSXIdentifier[name!=/^(?:label|meta|checked|onToggle|style|className|key|ref|className|style|children)$/]",
+        "message": "<ListRow> doesn't accept that prop. Declared props: label, meta, checked, onToggle, style, className."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='PrimaryButton'] > JSXAttribute > JSXIdentifier[name!=/^(?:children|state|icon|onClick|style|className|key|ref|className|style|children)$/]",
+        "message": "<PrimaryButton> doesn't accept that prop. Declared props: children, state, icon, onClick, style, className."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='PrimaryButton'] > JSXAttribute[name.name='state'] > Literal[value!=/^(?:default|hover|pressed|focus|disabled)$/]",
+        "message": "<PrimaryButton> state must be one of 'default' | 'hover' | 'pressed' | 'focus' | 'disabled'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='ProgressIndicator'] > JSXAttribute > JSXIdentifier[name!=/^(?:value|height|style|className|key|ref|className|style|children)$/]",
+        "message": "<ProgressIndicator> doesn't accept that prop. Declared props: value, height, style, className."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='SearchField'] > JSXAttribute > JSXIdentifier[name!=/^(?:placeholder|shortcut|value|onChange|style|className|key|ref|className|style|children)$/]",
+        "message": "<SearchField> doesn't accept that prop. Declared props: placeholder, shortcut, value, onChange, style, className."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='SecondaryButton'] > JSXAttribute > JSXIdentifier[name!=/^(?:children|icon|onClick|style|className|key|ref|className|style|children)$/]",
+        "message": "<SecondaryButton> doesn't accept that prop. Declared props: children, icon, onClick, style, className."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='SectionCard'] > JSXAttribute > JSXIdentifier[name!=/^(?:title|action|onAction|elevation|children|style|className|key|ref|className|style|children)$/]",
+        "message": "<SectionCard> doesn't accept that prop. Declared props: title, action, onAction, elevation, children, style, className."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='SectionCard'] > JSXAttribute[name.name='elevation'] > Literal[value!=/^(?:card|glow|elevated|soft)$/]",
+        "message": "<SectionCard> elevation must be one of 'card' | 'glow' | 'elevated' | 'soft'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='SidebarNavigationItem'] > JSXAttribute > JSXIdentifier[name!=/^(?:icon|label|state|onClick|style|className|key|ref|className|style|children)$/]",
+        "message": "<SidebarNavigationItem> doesn't accept that prop. Declared props: icon, label, state, onClick, style, className."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='SidebarNavigationItem'] > JSXAttribute[name.name='state'] > Literal[value!=/^(?:active|default)$/]",
+        "message": "<SidebarNavigationItem> state must be one of 'active' | 'default'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='SidebarNavItem'] > JSXAttribute > JSXIdentifier[name!=/^(?:icon|label|state|onClick|style|className|key|ref|className|style|children)$/]",
+        "message": "<SidebarNavItem> doesn't accept that prop. Declared props: icon, label, state, onClick, style, className."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='SidebarNavItem'] > JSXAttribute[name.name='state'] > Literal[value!=/^(?:active|default|hover)$/]",
+        "message": "<SidebarNavItem> state must be one of 'active' | 'default' | 'hover'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='StatusChip'] > JSXAttribute > JSXIdentifier[name!=/^(?:children|tone|style|className|key|ref|className|style|children)$/]",
+        "message": "<StatusChip> doesn't accept that prop. Declared props: children, tone, style, className."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='StatusChip'] > JSXAttribute[name.name='tone'] > Literal[value!=/^(?:accent|success|warning|danger|info|neutral)$/]",
+        "message": "<StatusChip> tone must be one of 'accent' | 'success' | 'warning' | 'danger' | 'info' | 'neutral'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Toggle'] > JSXAttribute > JSXIdentifier[name!=/^(?:on|size|onChange|style|className|key|ref|className|style|children)$/]",
+        "message": "<Toggle> doesn't accept that prop. Declared props: on, size, onChange, style, className."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Toggle'] > JSXAttribute[name.name='size'] > Literal[value!=/^(?:md|sm)$/]",
+        "message": "<Toggle> size must be one of 'md' | 'sm'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='TopNavigationAction'] > JSXAttribute > JSXIdentifier[name!=/^(?:icon|active|onClick|style|className|key|ref|className|style|children)$/]",
+        "message": "<TopNavigationAction> doesn't accept that prop. Declared props: icon, active, onClick, style, className."
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/index.js"
+      ],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    }
+  ],
+  "x-omelette": {
+    "components": {
+      "AISendButton": {
+        "replaces": []
+      },
+      "BaseCard": {
+        "replaces": []
+      },
+      "IconContainer": {
+        "replaces": []
+      },
+      "KPICard": {
+        "replaces": []
+      },
+      "ListRow": {
+        "replaces": []
+      },
+      "PrimaryButton": {
+        "replaces": []
+      },
+      "ProgressIndicator": {
+        "replaces": []
+      },
+      "SearchField": {
+        "replaces": []
+      },
+      "SecondaryButton": {
+        "replaces": []
+      },
+      "SectionCard": {
+        "replaces": []
+      },
+      "SidebarNavigationItem": {
+        "replaces": []
+      },
+      "SidebarNavItem": {
+        "replaces": []
+      },
+      "StatusChip": {
+        "replaces": []
+      },
+      "Toggle": {
+        "replaces": []
+      },
+      "TopNavigationAction": {
+        "replaces": []
+      }
+    },
+    "tokens": [
+      "--accent-danger",
+      "--accent-deep",
+      "--accent-glow",
+      "--accent-info",
+      "--accent-primary",
+      "--accent-success",
+      "--accent-warning",
+      "--amber-400",
+      "--background-base",
+      "--background-raised",
+      "--blur-ambient",
+      "--blur-glass",
+      "--border-accent",
+      "--border-focus",
+      "--border-subtle",
+      "--font-body",
+      "--font-display",
+      "--glass-blur",
+      "--glass-blur-card",
+      "--glow-accent",
+      "--glow-nav-active",
+      "--gradient-accent",
+      "--gradient-avatar",
+      "--gradient-brand",
+      "--gradient-deep-space",
+      "--gradient-orb",
+      "--gray-100",
+      "--gray-300",
+      "--gray-400",
+      "--gray-500",
+      "--green-400",
+      "--hairline",
+      "--hairline-accent",
+      "--radius-full",
+      "--radius-lg",
+      "--radius-md",
+      "--radius-sm",
+      "--radius-xl",
+      "--rose-400",
+      "--shadow-card",
+      "--shadow-card-glow",
+      "--shadow-elevated",
+      "--shadow-soft",
+      "--sky-400",
+      "--space-600",
+      "--space-700",
+      "--space-800",
+      "--space-900",
+      "--space-950",
+      "--space-card-gap",
+      "--space-card-pad-h",
+      "--space-card-pad-v",
+      "--space-content-sm",
+      "--space-kpi-pad-h",
+      "--space-kpi-pad-v",
+      "--space-outer-margin",
+      "--space-section",
+      "--spacing-2xl",
+      "--spacing-3xl",
+      "--spacing-lg",
+      "--spacing-md",
+      "--spacing-sm",
+      "--spacing-xl",
+      "--spacing-xs",
+      "--spacing-xxs",
+      "--stroke-hairline",
+      "--stroke-medium",
+      "--surface-card",
+      "--surface-elevated",
+      "--surface-inset",
+      "--text-accent",
+      "--text-body-size",
+      "--text-card-title-size",
+      "--text-display-size",
+      "--text-meta-size",
+      "--text-metric-size",
+      "--text-muted",
+      "--text-on-accent",
+      "--text-primary",
+      "--text-secondary",
+      "--text-title-size",
+      "--violet-300",
+      "--violet-400",
+      "--violet-500",
+      "--violet-600",
+      "--violet-700",
+      "--white"
+    ],
+    "tokenKinds": {
+      "--font-display": "font",
+      "--font-body": "font",
+      "--accent-danger": "color",
+      "--accent-deep": "color",
+      "--accent-glow": "color",
+      "--accent-info": "color",
+      "--accent-primary": "color",
+      "--accent-success": "color",
+      "--accent-warning": "color",
+      "--amber-400": "color",
+      "--background-base": "color",
+      "--background-raised": "color",
+      "--blur-ambient": "other",
+      "--blur-glass": "other",
+      "--border-accent": "color",
+      "--border-focus": "color",
+      "--border-subtle": "color",
+      "--gray-100": "color",
+      "--gray-300": "color",
+      "--gray-400": "color",
+      "--gray-500": "color",
+      "--green-400": "color",
+      "--radius-full": "radius",
+      "--radius-lg": "radius",
+      "--radius-md": "radius",
+      "--radius-sm": "radius",
+      "--radius-xl": "radius",
+      "--rose-400": "color",
+      "--sky-400": "color",
+      "--space-600": "color",
+      "--space-700": "color",
+      "--space-800": "color",
+      "--space-900": "color",
+      "--space-950": "color",
+      "--space-card-gap": "spacing",
+      "--space-card-pad-h": "spacing",
+      "--space-card-pad-v": "spacing",
+      "--space-content-sm": "spacing",
+      "--space-kpi-pad-h": "spacing",
+      "--space-kpi-pad-v": "spacing",
+      "--space-outer-margin": "spacing",
+      "--space-section": "spacing",
+      "--spacing-2xl": "spacing",
+      "--spacing-3xl": "spacing",
+      "--spacing-lg": "spacing",
+      "--spacing-md": "spacing",
+      "--spacing-sm": "spacing",
+      "--spacing-xl": "spacing",
+      "--spacing-xs": "spacing",
+      "--spacing-xxs": "spacing",
+      "--stroke-hairline": "color",
+      "--stroke-medium": "color",
+      "--surface-card": "color",
+      "--surface-elevated": "color",
+      "--surface-inset": "color",
+      "--text-accent": "color",
+      "--text-muted": "color",
+      "--text-on-accent": "color",
+      "--text-primary": "color",
+      "--text-secondary": "color",
+      "--violet-300": "color",
+      "--violet-400": "color",
+      "--violet-500": "color",
+      "--violet-600": "color",
+      "--violet-700": "color",
+      "--white": "color",
+      "--shadow-card": "shadow",
+      "--shadow-card-glow": "shadow",
+      "--shadow-elevated": "shadow",
+      "--shadow-soft": "shadow",
+      "--glow-accent": "shadow",
+      "--glow-nav-active": "shadow",
+      "--hairline": "color",
+      "--hairline-accent": "color",
+      "--gradient-accent": "other",
+      "--gradient-brand": "other",
+      "--gradient-avatar": "other",
+      "--gradient-orb": "other",
+      "--gradient-deep-space": "other",
+      "--glass-blur": "other",
+      "--glass-blur-card": "other",
+      "--text-display-size": "font",
+      "--text-title-size": "font",
+      "--text-card-title-size": "font",
+      "--text-metric-size": "font",
+      "--text-body-size": "font",
+      "--text-meta-size": "font"
+    },
+    "fontFamilies": [
+      "Inter",
+      "Rajdhani"
+    ]
+  }
+}

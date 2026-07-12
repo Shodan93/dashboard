@@ -1,0 +1,12 @@
+/* Personal OS webfonts.
+   Inter (body/UI) and Rajdhani (display/labels) are the exact families used
+   in the source file. Loaded from the Google Fonts CDN rather than bundled
+   binaries — swap in self-hosted @font-face if you need offline/production use. */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Rajdhani:wght@500;600;700&display=swap');
+
+:root {
+  /* Family aliases */
+  --font-display: 'Rajdhani', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}

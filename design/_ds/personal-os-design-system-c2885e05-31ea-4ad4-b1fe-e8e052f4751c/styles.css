@@ -1,0 +1,7 @@
+/* Personal OS — Design System global CSS entry point.
+   Consumers link THIS file. It is an @import manifest only. */
+
+@import './tokens/fonts.css';
+@import './tokens/fig-tokens.css';
+@import './tokens/aliases.css';
+@import './tokens/typography.css';
