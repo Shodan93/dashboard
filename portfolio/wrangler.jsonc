@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // Name muss dem Worker aus dem Cloudflare-Git-Import entsprechen (Repo-Name).
+  "name": "portfolio",
+  "compatibility_date": "2026-07-01",
+  "observability": { "enabled": true },
+  // Reine statische Seite: kein Worker-Skript, nur Assets aus ./public.
+  "assets": {
+    "directory": "./public",
+    "not_found_handling": "404-page"
+  },
+  // Custom Domain: legt DNS-Eintrag + Zertifikat in der Zone mumelter.org automatisch an.
+  "routes": [{ "pattern": "portfolio.mumelter.org", "custom_domain": true }]
+}
