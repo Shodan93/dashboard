@@ -4,9 +4,11 @@
   "name": "portfolio",
   "compatibility_date": "2026-07-01",
   "observability": { "enabled": true },
-  // Reine statische Seite: kein Worker-Skript, nur Assets aus ./public.
+  // Reine statische Seite: kein Worker-Skript, nur Assets.
+  // Die Seitendateien liegen unter ../public/portfolio, damit sie zusaetzlich
+  // ueber den bestehenden dashboard-Worker als Vorschau erreichbar sind.
   "assets": {
-    "directory": "./public",
+    "directory": "../public/portfolio",
     "not_found_handling": "404-page"
   },
   // Custom Domain: legt DNS-Eintrag + Zertifikat in der Zone mumelter.org automatisch an.

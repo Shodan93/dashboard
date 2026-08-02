@@ -7,15 +7,25 @@ Muster wie `dashboard.mumelter.org`.
 
 ## Aufbau
 
+Die Seitendateien liegen bewusst unter `../public/portfolio`. Dadurch liefert
+der bestehende `dashboard`-Worker sie ohne weitere Einrichtung als Vorschau
+unter `https://dashboard.mumelter.org/portfolio/` aus.
+
 ```
-public/
+../public/portfolio/
   index.html                                   Die komplette Seite (Styles inline)
-  assets/royalshrimp-logo.jpg                  Logo, aus der Original-Slide extrahiert
+  assets/royalshrimp-logo.png                  Logo, aus der Original-Slide extrahiert
   assets/royalshrimp-qr.png                    QR-Code, aus der Original-Slide extrahiert
+  assets/fonts/*.woff2                         Cormorant Garamond + Lora, selbst gehostet
   Arbeitsprobe_1_RoyalShrimp_Svenja_Mumelter.pdf
   Arbeitsprobe_2_Cuply_Svenja_Mumelter.pdf     (noch zu ergänzen)
-wrangler.jsonc                                 Worker-Konfiguration + Custom Domain
+portfolio/
+  wrangler.jsonc                               Worker-Konfiguration + Custom Domain
 ```
+
+Sobald ein eigenes Repo für die Seite existiert, wandert `../public/portfolio`
+dort nach `public/` und die `assets.directory` in der `wrangler.jsonc` wird
+wieder auf `./public` gesetzt.
 
 Der Kopfbereich der Seite bildet die Original-Slide „Arbeitsprobe RoyalShrimp.de"
 in Code nach: Farben, Schriftgrößen und Rasterabstände sind aus der PDF ausgelesen
