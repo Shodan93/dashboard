@@ -207,8 +207,10 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
 
 /* ListRow (DS) */
 .lrow{display:flex;align-items:center;gap:10px;height:36px;padding:0 2px}
-.lrow .cb{width:16px;height:16px;flex-shrink:0;border-radius:5px;border:none;padding:0;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;background:transparent;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.18)}
-.lrow .cb.ck{background:var(--gradient-accent);box-shadow:none}
+/* Checkbox ist jetzt frei wiederverwendbar (auch im Journal-Check-in),
+   nicht mehr nur innerhalb von .lrow. */
+.cb{width:16px;height:16px;flex-shrink:0;border-radius:5px;border:none;padding:0;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;background:transparent;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.18)}
+.cb.ck{background:var(--gradient-accent);box-shadow:none}
 .lrow .tx{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--font-body);font-size:12px;color:var(--text-primary)}
 .lrow.done .tx{color:var(--text-muted);text-decoration:line-through}
 .lrow .mt{flex-shrink:0;font-family:var(--font-body);font-weight:500;font-size:12px;color:var(--text-muted)}
@@ -224,7 +226,9 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
 .tgl .kn{position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;background:#fff;transition:left .16s cubic-bezier(.4,0,.2,1)}
 .tgl.on .kn{left:15px}
 
-.bottomrow{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+/* Fünf Module über die volle Breite. Grid streckt die Zeile, dadurch enden
+   alle Karten unten auf einer Linie — unabhängig von ihrem Inhalt. */
+.bottomrow{display:grid;grid-template-columns:repeat(5,1fr);gap:var(--s5);align-items:stretch}
 .bottomrow>.card,.kpirow>.kpi{min-width:0}
 
 /* Orbit-Karte */
@@ -279,9 +283,11 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
 .agitem .tm{width:44px;flex-shrink:0;font-family:var(--font-display);font-weight:500;font-size:12px;color:var(--text-accent)}
 .agitem .ti{flex:1;font-family:var(--font-body);font-size:12px;color:var(--text-primary)}
 .agitem .du{font-family:var(--font-body);font-size:11px;color:var(--text-muted)}
-.calwrap{display:flex;gap:18px;flex:1;min-width:0}
+/* Der Kalender sitzt jetzt in der unteren Reihe (schmale Spalte) — Agenda und
+   Mini-Monat stapeln deshalb grundsätzlich, statt nebeneinander zu stehen. */
+.calwrap{display:flex;flex-direction:column;gap:var(--s4);flex:1;min-width:0}
 .calwrap>*{min-width:0}
-.mm{width:158px;flex-shrink:0;display:flex;flex-direction:column;gap:6px}
+.mm{width:100%;flex-shrink:0;display:flex;flex-direction:column;gap:6px}
 .mm-h{display:flex;justify-content:space-between;align-items:center}
 .mm-nav{border:none;background:none;color:var(--text-muted);cursor:pointer;font-size:14px;width:24px;height:24px;border-radius:6px}
 .mm-nav:hover{color:var(--text-primary);background:rgba(255,255,255,.06)}
@@ -371,7 +377,59 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
 .loginlink:hover{color:rgb(214,203,255)}
 .loginfoot{display:flex;justify-content:space-between;align-items:center;margin-top:4px}
 
+/* ---------- Toggl Track (neu, Card-Sprache unverändert übernommen) ---------- */
+.tg-top{display:flex;align-items:flex-start;gap:var(--s4)}
+.tg-today,.tg-timer{display:flex;flex-direction:column;gap:var(--s2)}
+.tg-today{flex:1;min-width:0}
+.tg-timer{align-items:flex-end}
+.tg-play{width:44px;height:44px;border-radius:50%;border:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--gradient-accent);color:#fff;box-shadow:var(--glow-accent);transition:box-shadow .16s ease,background .16s ease}
+.tg-play:hover{box-shadow:0 0 22px 0 rgba(167,139,250,.62)}
+.tg-play.on{background:var(--surface-elevated);color:var(--text-accent);box-shadow:var(--hairline-accent)}
+.tg-stop{width:32px;height:32px;border-radius:50%;border:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--surface-inset);box-shadow:var(--hairline);color:var(--text-muted);transition:color .14s ease,background .14s ease}
+.tg-stop:hover{background:var(--surface-elevated);color:var(--text-secondary)}
+.tg-sec{display:flex;flex-direction:column;gap:var(--s2)}
+.tg-proj{display:flex;align-items:center;gap:var(--s3);padding:var(--s3);border-radius:12px;background:var(--surface-inset);box-shadow:var(--hairline)}
+.tg-pn{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.tg-pn .n{font-family:var(--font-body);font-weight:600;font-size:13px;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tg-pn .s{font-family:var(--font-body);font-size:11px;color:var(--text-muted)}
+.tg-pt{flex-shrink:0;font-family:var(--font-display);font-weight:500;font-size:13px;color:var(--text-accent)}
+.tg-week{display:flex;align-items:flex-end;gap:var(--s1);height:56px}
+.tg-day{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;height:100%}
+.tg-bar{width:100%;min-height:3px;border-radius:3px;background:var(--gradient-accent);opacity:.85}
+.tg-bar.zero{background:rgba(255,255,255,.1)}
+.tg-dl{font-family:var(--font-body);font-size:10px;line-height:1;color:var(--text-muted)}
+
+/* ---------- Journal: Abend-Check-in (eingelassenes Subpanel) ---------- */
+.jci{display:flex;flex-direction:column;gap:var(--s2);padding:var(--s3);border-radius:12px;background:var(--surface-inset);box-shadow:var(--hairline)}
+.jci-h{display:flex;align-items:center;gap:var(--s2)}
+/* Bewusst nicht in Versalien: in der schmalen Spalte bräche "Abend-Check-in ·
+   10 Min" sonst auf zwei Zeilen um. Schreibweise wie im Briefing. */
+.jci-t{flex:1;min-width:0;font-family:var(--font-display);font-weight:500;font-size:13px;letter-spacing:var(--ls-tight);color:var(--text-secondary)}
+.jci-edit{width:24px;height:24px;flex-shrink:0;border:none;border-radius:7px;background:none;cursor:pointer;color:var(--text-muted);display:inline-flex;align-items:center;justify-content:center;transition:background .14s ease,color .14s ease}
+.jci-edit:hover{background:rgba(255,255,255,.06);color:var(--text-accent)}
+.jci-l{display:flex;flex-direction:column;gap:1px}
+.jci-l .k{font-family:var(--font-body);font-size:11px;color:var(--text-muted)}
+.jci-l .v{font-family:var(--font-body);font-size:12px;line-height:1.4;color:var(--text-primary)}
+.jci.done .jci-t{color:var(--accent-success)}
+
+/* Kalender steht jetzt in einer schmalen Spalte — Titel und Provider-Link
+   nebeneinander würden den Titel umbrechen, also untereinander. */
+.sec-cal .cardhead{flex-wrap:wrap;row-gap:var(--s1)}
+.sec-cal .cardhead .ttl{flex:1 0 100%}
+
 /* ---------- Responsiv (aus dem Design 1:1) ---------- */
+/* Zweispalter (ab 1025px): Orbit-Board und Toggl-Kachel enden auf einer Linie.
+   Beide Spalten strecken sich auf gleiche Höhe, die jeweils letzte Kachel
+   nimmt die Resthöhe auf. Bewusst auf den Zweispalter begrenzt — darunter
+   sind die Spalten gestapelt bzw. .osmain ist display:contents. */
+@container (min-width:1025px){
+  .oslayout{align-items:stretch}
+  .osmain>.sec-orbit{flex:1}
+  .osright>.sec-toggl{flex:1}
+  /* Kanban-Spalten füllen die gewonnene Höhe mit, sonst entsteht unten im
+     gestreckten Board eine tote Fläche. */
+  .osmain>.sec-orbit>.orbit-full{flex:1}
+}
 /* Ab ≤1440px schrumpft .osright auf 340/296px — Agenda + Mini-Monat passen
    dann nicht mehr nebeneinander: Kalender-Kachel stapelt (Handoff-Fix). */
 @container (max-width:1440px){.osright{width:340px}.osshell{gap:var(--s5)}.calwrap{flex-direction:column;gap:var(--s4)}.mm{width:100%}}
@@ -415,7 +473,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
 .osapp[data-tab="kalender"] .t-kalender{display:flex}
 .osapp[data-tab="aibrain"] .t-aibrain{display:flex}
 .osapp[data-tab="mehr"] .t-mehr{display:flex}
-.sec-brief{order:1}.sec-tasks{order:2}.sec-habits{order:3}.sec-health{order:4}.sec-cal{order:5}.sec-goals{order:6}.sec-journal{order:7}.sec-smart{order:8}.sec-brain{order:9}
+.sec-brief{order:1}.sec-tasks{order:2}.sec-habits{order:3}.sec-health{order:4}.sec-toggl{order:5}.sec-cal{order:6}.sec-goals{order:7}.sec-journal{order:8}.sec-smart{order:9}.sec-brain{order:10}
 .oscontent{gap:14px}
 .calwrap{flex-direction:column;gap:14px}
 .mm{width:100%}
@@ -534,24 +592,6 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
           <div id="healthList" style="display:contents"></div>
         </div>
 
-        <div class="bottomrow">
-          <div class="card lift sec sec-journal t-home">
-            <div class="cardhead"><span class="pos-card-title ttl">Journal</span><button class="act" data-act="flash" data-arg="Journal folgt in einem späteren Schritt">Alle →</button></div>
-            <div class="wave" id="wave"></div>
-            <span class="pos-caption" id="journalCap">Heute, 08:15 · 0:45</span>
-            <span class="jtext" id="journalText">Fokus heute auf Orbit und Figma Foundation. Guter Call mit ACME am Morgen — abends Training nicht vergessen.</span>
-          </div>
-          <div class="card lift sec sec-brain t-home t-aibrain" style="position:relative;overflow:hidden">
-            <div class="cardhead"><span class="pos-card-title ttl">AI Brain</span><button class="act" data-act="flash" data-arg="AI Brain folgt in einem späteren Schritt">Öffnen →</button></div>
-            <img class="brainimg" src="assets/ai-brain-network.png" alt="">
-            <div style="display:flex;flex-direction:column;gap:12px;position:relative;z-index:1" id="brainList"></div>
-          </div>
-          <div class="card lift sec sec-smart t-home">
-            <div class="cardhead"><span class="pos-card-title ttl">Smart Home</span><button class="act" data-act="flash" data-arg="Smart Home folgt in einem späteren Schritt">Alle Geräte →</button></div>
-            <div class="devgrid" id="devgrid"></div>
-          </div>
-        </div>
-
         <div class="card lift sec sec-invest t-mehr mob-only">
           <div class="cardhead"><span class="pos-card-title ttl">Investments</span><span class="chip chip-success">+3,2%</span></div>
           <div class="row" style="align-items:baseline;gap:8px"><span class="pos-metric">48.320 €</span><span class="pos-meta" style="color:var(--accent-success)">Heute +412 €</span></div>
@@ -576,23 +616,101 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
           <div class="aibox"><input id="aiInput" placeholder="Frag deine AI …"><button class="aisend" id="aiSend" disabled aria-label="Senden"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4Z"/></svg></button></div>
         </div>
 
-        <!-- Ganze Kachel klickbar; innere Buttons behalten Vorrang (closest [data-act] trifft zuerst sie) -->
-        <div class="card card-soft lift sec sec-cal t-home t-kalender" data-act="mobTab" data-arg="kalender" style="cursor:pointer">
-          <div class="cardhead"><span class="pos-card-title ttl">Kalender – Heute</span><button class="act" data-act="openIntegrations">Google Calendar</button></div>
-          <div class="calwrap">
-            <div class="agenda" id="agendaList"></div>
-            <div class="mm">
-              <div class="mm-h"><button class="mm-nav" data-act="prevMonth">‹</button><span class="mm-t" id="mmTitle"></span><button class="mm-nav" data-act="nextMonth">›</button></div>
-              <div class="mm-grid" id="mmGrid"></div>
-              <span class="sel-line" id="selLine"></span>
+        <!-- Begleitkachel zum Orbit-Board: füllt die Resthöhe, damit die
+             Unterkante mit dem Board auf einer Linie liegt (Regel weiter unten
+             im Responsive-Block, nur im Zweispalter ab 1025px). -->
+        <div class="card card-soft lift sec sec-toggl t-home t-mehr">
+          <div class="cardhead">
+            <span class="pos-card-title ttl">Toggl Track</span>
+            <span class="chip chip-neutral" id="tgState">Pausiert</span>
+          </div>
+
+          <div class="tg-top">
+            <div class="tg-today">
+              <span class="pos-meta">Getrackt heute</span>
+              <span class="pos-metric" id="tgToday">03:45:20</span>
+            </div>
+            <div class="tg-timer">
+              <span class="pos-meta">Aktiver Timer</span>
+              <div class="row" style="gap:var(--s2)">
+                <button class="tg-play" id="tgPlay" data-act="togglTimer" aria-label="Timer starten">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5Z"/></svg>
+                </button>
+                <button class="tg-stop" data-act="togglStop" aria-label="Timer stoppen">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="card card-soft lift sec sec-goals t-home" style="flex:1">
-          <div class="cardhead"><span class="pos-card-title ttl">Goals – Monatsziele</span><button class="act" data-act="flash" data-arg="Goals folgen in einem späteren Schritt">Alle →</button></div>
-          <div id="goalsList" style="display:contents"></div>
+          <div class="tg-sec">
+            <span class="pos-meta">Aktuelles Projekt</span>
+            <div class="tg-proj">
+              <span class="dotmark" style="background:var(--violet-300)"></span>
+              <span class="tg-pn"><span class="n">ACME Redesign</span><span class="s">UI/UX Design</span></span>
+              <span class="tg-pt" id="tgProjTime">01:16:40</span>
+            </div>
+          </div>
+
+          <div class="tg-sec">
+            <div class="stat-h"><span class="pos-meta">Diese Woche</span><span class="stat-v" id="tgWeekSum">12:30:15</span></div>
+            <div class="tg-week" id="tgWeek"></div>
+          </div>
+
+          <div style="flex:1"></div>
+          <a class="act" href="https://track.toggl.com" target="_blank" rel="noopener">Zu Toggl →</a>
         </div>
+      </div>
+    </div>
+
+    <!-- Untere Modulreihe: liegt bewusst außerhalb von .oslayout, damit sie
+         über die volle Breite läuft und alle fünf Kacheln bündig enden. -->
+    <div class="bottomrow">
+      <div class="card lift sec sec-journal t-home">
+        <div class="cardhead"><span class="pos-card-title ttl">Journal</span><button class="act" data-act="flash" data-arg="Journal folgt in einem späteren Schritt">Alle →</button></div>
+        <div class="wave" id="wave"></div>
+        <span class="pos-caption" id="journalCap">Heute, 08:15 · 0:45</span>
+        <span class="jtext" id="journalText">Fokus heute auf Orbit und Figma Foundation. Guter Call mit ACME am Morgen — abends Training nicht vergessen.</span>
+        <div style="flex:1"></div>
+        <!-- Abend-Check-in: bewusst als eingelassenes Subpanel, nicht als
+             eigenständiges Modul. -->
+        <div class="jci">
+          <div class="jci-h">
+            <button class="cb" id="jciCb" data-act="jciToggle" role="checkbox" aria-checked="false" aria-label="Abend-Check-in erledigt"></button>
+            <span class="jci-t">Abend-Check-in · 10 Min</span>
+            <button class="jci-edit" data-act="flash" data-arg="Check-in-Eingabe folgt in einem späteren Schritt" aria-label="Check-in bearbeiten"><svg width="13" height="13"><use href="#i-pencil"/></svg></button>
+          </div>
+          <div class="jci-l"><span class="k">Gut heute</span><span class="v">Fokus am Morgen.</span></div>
+          <div class="jci-l"><span class="k">Schwierig heute</span><span class="v">Zu viele offene Aufgaben.</span></div>
+        </div>
+      </div>
+
+      <div class="card lift sec sec-brain t-home t-aibrain" style="position:relative;overflow:hidden">
+        <div class="cardhead"><span class="pos-card-title ttl">AI Brain</span><button class="act" data-act="flash" data-arg="AI Brain folgt in einem späteren Schritt">Öffnen →</button></div>
+        <img class="brainimg" src="assets/ai-brain-network.png" alt="">
+        <div style="display:flex;flex-direction:column;gap:var(--s3);position:relative;z-index:1" id="brainList"></div>
+      </div>
+
+      <div class="card lift sec sec-smart t-home">
+        <div class="cardhead"><span class="pos-card-title ttl">Smart Home</span><button class="act" data-act="flash" data-arg="Smart Home folgt in einem späteren Schritt">Alle Geräte →</button></div>
+        <div class="devgrid" id="devgrid"></div>
+      </div>
+
+      <div class="card card-soft lift sec sec-cal t-home t-kalender">
+        <div class="cardhead"><span class="pos-card-title ttl">Kalender – Heute</span><button class="act" data-act="openIntegrations">Google Calendar</button></div>
+        <div class="calwrap">
+          <div class="agenda" id="agendaList"></div>
+          <div class="mm">
+            <div class="mm-h"><button class="mm-nav" data-act="prevMonth">‹</button><span class="mm-t" id="mmTitle"></span><button class="mm-nav" data-act="nextMonth">›</button></div>
+            <div class="mm-grid" id="mmGrid"></div>
+            <span class="sel-line" id="selLine"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card card-soft lift sec sec-goals t-home">
+        <div class="cardhead"><span class="pos-card-title ttl">Goals – Monatsziele</span><button class="act" data-act="flash" data-arg="Goals folgen in einem späteren Schritt">Alle →</button></div>
+        <div id="goalsList" style="display:contents"></div>
       </div>
     </div>
   </div>
@@ -690,6 +808,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
 <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></symbol>
 <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></symbol>
 <symbol id="i-more" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/></symbol>
+<symbol id="i-pencil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19.5 8.5a2.8 2.8 0 0 0-4-4L4 16Z"/><path d="m14.5 5.5 4 4"/></symbol>
 <symbol id="i-flame" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.4-.5-2-1-3-1.1-2.1-.2-4 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.2.4-2.3 1-3a2.5 2.5 0 0 0 2.5 2.5Z"/></symbol>
 <symbol id="i-heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7Z"/></symbol>
 <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
@@ -1204,8 +1323,34 @@ function renderBoardPick() {
   }).join('') : '<div class="empty">Keine Boards gefunden.</div>';
 }
 
+/* ---------- Toggl Track ----------
+   Reine UI-Integration: keine Toggl-API, kein laufender Timer. Die Werte sind
+   Platzhalter im Design, analog zu Health/Habits/Invest. Der Play-Knopf
+   schaltet nur den sichtbaren Zustand um. */
+let togglRunning = false;
+const togglWeek = [['Mo', 2.50], ['Di', 3.25], ['Mi', 1.75], ['Do', 3.75], ['Fr', 1.05], ['Sa', 0], ['So', 0]];
+function renderToggl() {
+  const max = Math.max.apply(null, togglWeek.map(d => d[1])) || 1;
+  $('tgWeek').innerHTML = togglWeek.map(([label, h]) => {
+    const pct = Math.round(h / max * 100);
+    const title = label + ': ' + (h ? h.toFixed(2).replace('.', ',') + ' h' : 'keine Zeit');
+    return '<div class="tg-day" title="' + title + '">' +
+      '<span class="tg-bar' + (h ? '' : ' zero') + '" style="height:' + (h ? Math.max(pct, 6) : 3) + '%"></span>' +
+      '<span class="tg-dl">' + label + '</span></div>';
+  }).join('');
+  const play = $('tgPlay');
+  play.classList.toggle('on', togglRunning);
+  play.setAttribute('aria-label', togglRunning ? 'Timer pausieren' : 'Timer starten');
+  play.innerHTML = togglRunning
+    ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="7" y="5" width="4" height="14" rx="1.4"/><rect x="13" y="5" width="4" height="14" rx="1.4"/></svg>'
+    : '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5Z"/></svg>';
+  const st = $('tgState');
+  st.textContent = togglRunning ? 'Läuft' : 'Pausiert';
+  st.className = 'chip ' + (togglRunning ? 'chip-success' : 'chip-neutral');
+}
+
 function renderAll() {
-  renderHeader(); renderNav(); renderKpis(); renderOrbit(); renderLists(); renderBrief(); renderAgenda(); renderCal(); renderJournal();
+  renderHeader(); renderNav(); renderKpis(); renderOrbit(); renderLists(); renderBrief(); renderAgenda(); renderCal(); renderJournal(); renderToggl();
 }
 
 /* ---------- Aktionen ---------- */
@@ -1222,6 +1367,17 @@ function handleAct(act, arg, el, e) {
       mobileTab = arg;
       const rev = { home: 'HOME', orbit: 'ORBIT', kalender: 'KALENDER', aibrain: 'AI BRAIN', mehr: 'INVEST' };
       navActive = rev[arg] || 'HOME'; renderNav();
+      break;
+    }
+    case 'togglTimer': togglRunning = !togglRunning; renderToggl(); break;
+    case 'togglStop':
+      if (togglRunning) { togglRunning = false; renderToggl(); toast('Timer gestoppt (Platzhalter)'); }
+      break;
+    case 'jciToggle': {
+      const cb = $('jciCb'), on = !cb.classList.contains('ck');
+      cb.classList.toggle('ck', on);
+      cb.setAttribute('aria-checked', String(on));
+      cb.closest('.jci').classList.toggle('done', on);
       break;
     }
     case 'openDrawer': $('drawerScrim').hidden = false; break;
